@@ -26,6 +26,21 @@
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
+
+    /* Design system colors (Material 3) */
+    --color-surface: #f9f9ff;
+    --color-surface-container-low: #f1f3ff;
+    --color-surface-container: #e9edff;
+    --color-surface-container-high: #e1e8fd;
+    --color-surface-container-highest: #dce2f7;
+    --color-surface-container-lowest: #ffffff;
+    --color-on-surface: #141b2b;
+    --color-on-surface-variant: #464555;
+    --color-outline: #777587;
+    --color-outline-variant: #c7c4d8;
+    --color-inverse-primary: #c3c0ff;
+    --color-on-background: #141b2b;
+    --color-surface-tint: #4d44e3;
 }
 
 @layer theme {
@@ -75,6 +90,26 @@ select:focus[data-flux-control] {
 /** daisyUI */
 @plugin "daisyui" {
     themes: light --default, dark --prefersdark;
+}
+
+/* Custom daisyUI theme colors for light mode */
+@layer base {
+    :root {
+        --color-primary: #3525cd;
+        --color-primary-content: #ffffff;
+        --color-secondary: #855300;
+        --color-secondary-content: #ffffff;
+        --color-accent: #8f0055;
+        --color-accent-content: #ffffff;
+        --color-neutral: #464555;
+        --color-neutral-content: #141b2b;
+        --color-base-100: #f9f9ff;
+        --color-base-200: #e9edff;
+        --color-base-300: #dce2f7;
+        --color-base-content: #141b2b;
+        --color-error: #ba1a1a;
+        --color-error-content: #ffffff;
+    }
 }
 
 /* maryUI */
