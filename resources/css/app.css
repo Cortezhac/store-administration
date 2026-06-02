@@ -26,21 +26,6 @@
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
-
-    /* Design system colors (Material 3) */
-    --color-surface: #f9f9ff;
-    --color-surface-container-low: #f1f3ff;
-    --color-surface-container: #e9edff;
-    --color-surface-container-high: #e1e8fd;
-    --color-surface-container-highest: #dce2f7;
-    --color-surface-container-lowest: #ffffff;
-    --color-on-surface: #141b2b;
-    --color-on-surface-variant: #464555;
-    --color-outline: #777587;
-    --color-outline-variant: #c7c4d8;
-    --color-inverse-primary: #c3c0ff;
-    --color-on-background: #141b2b;
-    --color-surface-tint: #4d44e3;
 }
 
 @layer theme {
@@ -111,6 +96,50 @@ select:focus[data-flux-control] {
         --color-error-content: #ffffff;
     }
 }
+
+/* Design system colors (Material Design 3) */
+:root {
+    --surface: #f9f9ff;
+    --surface-container-low: #f1f3ff;
+    --surface-container: #e9edff;
+    --surface-container-high: #e1e8fd;
+    --surface-container-highest: #dce2f7;
+    --surface-container-lowest: #ffffff;
+    --on-surface: #141b2b;
+    --on-surface-variant: #464555;
+    --outline: #777587;
+    --outline-variant: #c7c4d8;
+    --inverse-primary: #c3c0ff;
+    --on-background: #141b2b;
+    --surface-tint: #4d44e3;
+}
+
+[data-theme="dark"] {
+    --surface: #0f1422;
+    --surface-container-low: #1a1f30;
+    --surface-container: #232839;
+    --surface-container-high: #2d3244;
+    --surface-container-highest: #383d4f;
+    --surface-container-lowest: #0a0e1a;
+    --on-surface: #e3e2f9;
+    --on-surface-variant: #c7c4d8;
+    --outline: #9090a4;
+    --outline-variant: #464555;
+    --inverse-primary: #c3c0ff;
+    --on-background: #e3e2f9;
+    --surface-tint: #c3c0ff;
+}
+
+/* Custom utility classes for MD3 design tokens */
+.bg-surface { background-color: var(--surface); }
+.bg-surface-container-low { background-color: var(--surface-container-low); }
+.bg-surface-container { background-color: var(--surface-container); }
+.bg-surface-container-high { background-color: var(--surface-container-high); }
+.bg-surface-container-highest { background-color: var(--surface-container-highest); }
+.bg-surface-container-lowest { background-color: var(--surface-container-lowest); }
+.text-on-surface { color: var(--on-surface); }
+.text-on-surface-variant { color: var(--on-surface-variant); }
+.border-outline-variant { border-color: var(--outline-variant); }
 
 /* maryUI */
 @source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
