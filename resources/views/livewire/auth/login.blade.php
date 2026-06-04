@@ -12,19 +12,14 @@
         })();
     </script>
 
-    @php $title = __('Iniciar Sesión') @endphp
+    @php $title = __('login.title') @endphp
     @include('partials.head')
 
-    {{-- Design system fonts & icons --}}
+    {{-- Design system font --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
 
         <style>
-            .material-symbols-outlined {
-                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            }
             .glass-effect {
                 background: color-mix(in srgb, var(--surface-container-lowest) 70%, transparent);
                 backdrop-filter: blur(12px);
@@ -50,10 +45,9 @@
             </div>
             <div class="relative z-10 flex flex-col justify-end p-[80px] w-full">
                 <div class="glass-effect p-[24px] rounded-xl max-w-md shadow-2xl">
-                    <h2 class="text-[32px] font-semibold tracking-tight text-on-surface leading-10">Experiencia Curada
+                    <h2 class="text-[32px] font-semibold tracking-tight text-on-surface leading-10">{{ __('login.curated_experience') }}
                     </h2>
-                    <p class="mt-1 text-[18px] leading-7 text-on-surface-variant">Descubre nuestra nueva colección premium
-                        diseñada para el estilo de vida contemporáneo.</p>
+                    <p class="mt-1 text-[18px] leading-7 text-on-surface-variant">{{ __('login.curated_description') }}</p>
                 </div>
             </div>
         </section>
@@ -68,8 +62,8 @@
                         <x-app-logo-icon class="size-10 mb-4 fill-current text-primary" />
                         <h1
                             class="text-[36px] md:text-[48px] font-bold leading-[44px] md:leading-[56px] tracking-tight text-primary mb-1">
-                            Bienvenido de nuevo</h1>
-                        <p class="text-[18px] leading-7 text-on-surface-variant">Accede a tu cuenta premium</p>
+                            {{ __('login.welcome_back') }}</h1>
+                        <p class="text-[18px] leading-7 text-on-surface-variant">{{ __('login.access_premium') }}</p>
                     </header>
 
                     {{-- Session Status --}}
@@ -80,70 +74,38 @@
                         @csrf
 
                         {{-- Email / Username --}}
-                        <div class="space-y-1">
-                            <label
-                                class="text-[14px] font-semibold tracking-[0.05em] text-on-surface-variant flex items-center gap-1"
-                                for="email">
-                                <span class="material-symbols-outlined text-[18px]">person</span>
-                                Usuario
-                            </label>
-                            <x-mary-input name="email" id="email" :value="old('email')" type="email"
-                                placeholder="ejemplo@vibrant.com" required autofocus autocomplete="email"
-                                class="bg-surface-container-low border-outline-variant rounded-xl w-full focus-within:outline-hidden"
-                                omitError />
-                            @error('email')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <x-mary-input :label="__('login.email')" name="email" icon="o-user" :value="old('email')"
+                            type="email" :placeholder="__('login.email_placeholder')" required autofocus
+                            autocomplete="email" error-field="email"
+                            class="bg-surface-container-low border-outline-variant rounded-xl w-full focus-within:outline-hidden" />
 
                         {{-- Password --}}
-                        <div class="space-y-1">
-                            <label
-                                class="text-[14px] font-semibold tracking-[0.05em] text-on-surface-variant flex items-center gap-1"
-                                for="password">
-                                <span class="material-symbols-outlined text-[18px]">lock</span>
-                                Contraseña
-                            </label>
-                            <div class="relative" x-data="{ show: false }">
-                                <x-mary-input name="password" id="password" type="password"
-                                    x-bind:type="show ? 'text' : 'password'" placeholder="••••••••" required
-                                    autocomplete="current-password"
-                                    class="bg-surface-container-low border-outline-variant rounded-xl w-full pr-12 focus-within:outline-hidden"
-                                    omitError />
-                                <button type="button"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors"
-                                    @click="show = !show">
-                                    <span class="material-symbols-outlined"
-                                        x-text="show ? 'visibility_off' : 'visibility'">visibility</span>
-                                </button>
-                            </div>
-                            @error('password')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <x-mary-password :label="__('login.password')" name="password" icon="o-lock-closed"
+                            :placeholder="__('login.password_placeholder')" required autocomplete="current-password"
+                            error-field="password" right
+                            class="bg-surface-container-low border-outline-variant rounded-xl w-full focus-within:outline-hidden" />
 
                         {{-- Options Row --}}
                         <div class="flex items-center justify-between">
-                            <x-mary-toggle name="remember" label="Recuérdame"
+                            <x-mary-toggle name="remember" :label="__('login.remember_me')"
                                 :checked="old('remember')" class="toggle-primary" />
                             @if (Route::has('password.request'))
                                 <a href="{{ route('password.request') }}"
                                     class="text-[14px] font-semibold tracking-[0.05em] text-primary hover:underline">
-                                    ¿Olvidaste tu contraseña?
+                                    {{ __('login.forgot_password') }}
                                 </a>
                             @endif
                         </div>
 
                         {{-- Submit Button --}}
-                        <x-mary-button type="submit" label="Iniciar Sesión" icon="o-arrow-right"
-                            class="btn-primary w-full rounded-xl" spinner="login" />
+                        <x-mary-button type="submit" :label="__('login.submit')" icon="o-arrow-right"
+                            class="btn-primary w-full rounded-xl" />
                     </form>
 
                     {{-- Register Link --}}
                     <p class="mt-8 text-center text-[16px] leading-6 text-on-surface-variant">
-                        ¿No tienes una cuenta?
-                        <a href="{{ route('register') }}" class="text-primary font-bold hover:underline ml-1">Crear
-                            cuenta</a>
+                        {{ __('login.no_account') }}
+                        <a href="{{ route('register') }}" class="text-primary font-bold hover:underline ml-1">{{ __('login.create_account') }}</a>
                     </p>
                 </div>
             </div>
@@ -151,18 +113,16 @@
             {{-- Legal Footer Links & Theme Toggle --}}
             <div class="flex flex-col md:flex-row items-center justify-between px-[16px] md:px-[80px] pb-4">
                 <div class="flex flex-wrap justify-center gap-4 md:gap-6 opacity-60">
-                    <a class="text-[12px] font-medium hover:text-primary transition-colors" href="#">Política de
-                        Privacidad</a>
-                    <a class="text-[12px] font-medium hover:text-primary transition-colors" href="#">Términos de
-                        Servicio</a>
-                    <a class="text-[12px] font-medium hover:text-primary transition-colors" href="#">Ayuda</a>
+                    <a class="text-[12px] font-medium hover:text-primary transition-colors" href="#">{{ __('login.privacy_policy') }}</a>
+                    <a class="text-[12px] font-medium hover:text-primary transition-colors" href="#">{{ __('login.terms_of_service') }}</a>
+                    <a class="text-[12px] font-medium hover:text-primary transition-colors" href="#">{{ __('login.help') }}</a>
                 </div>
 
                 <div class="flex items-center gap-2 mt-2 md:mt-0" x-data>
                     <x-mary-theme-toggle />
                     <span @click="$el.parentElement.querySelector('input[type=checkbox]')?.click()"
                         class="text-[12px] font-medium cursor-pointer hover:text-primary transition-colors select-none opacity-60 hover:opacity-100">
-                        Cambiar tema
+                        {{ __('login.toggle_theme') }}
                     </span>
                 </div>
             </div>
