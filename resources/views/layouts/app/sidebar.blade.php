@@ -1,101 +1,144 @@
+@props([
+    'title' => null,
+])
+
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        <script>
+            (function() {
+                var theme = JSON.parse(localStorage.getItem('mary-theme'));
+                var cls = JSON.parse(localStorage.getItem('mary-class'));
+                if (theme) document.documentElement.setAttribute('data-theme', theme);
+                if (cls) document.documentElement.setAttribute('class', cls);
+            })();
+        </script>
+
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
-                <flux:sidebar.collapse class="lg:hidden" />
-            </flux:sidebar.header>
+    <body class="min-h-screen bg-surface text-on-surface">
+        <div class="drawer lg:drawer-open">
+            <input id="app-drawer" type="checkbox" class="drawer-toggle" />
 
-            <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
-            </flux:sidebar.nav>
+            <div class="drawer-content flex flex-col">
+                <header class="flex items-center justify-between lg:hidden px-4 py-3 border-b border-outline-variant bg-surface-container-low">
+                    <div class="flex items-center gap-2">
+                        <label for="app-drawer" class="btn btn-ghost btn-circle">
+                            <x-mary-icon name="o-bars-3" class="w-6 h-6" />
+                        </label>
+                        <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
+                    </div>
 
-            <flux:spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
-
-            <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
-        </flux:sidebar>
-
-        <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
-
-            <flux:spacer />
-
-            <flux:dropdown position="top" align="end">
-                <flux:profile
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevron-down"
-                />
-
-                <flux:menu>
-                    <flux:menu.radio.group>
-                        <div class="p-0 text-sm font-normal">
-                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                <flux:avatar
-                                    :name="auth()->user()->name"
-                                    :initials="auth()->user()->initials()"
-                                />
-
-                                <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <flux:heading class="truncate">{{ auth()->user()->name }}</flux:heading>
-                                    <flux:text class="truncate">{{ auth()->user()->email }}</flux:text>
-                                </div>
+                    <x-mary-dropdown>
+                        <x-slot:trigger>
+                            <button class="btn btn-ghost btn-circle">
+                                <x-mary-avatar :placeholder="auth()->user()->initials()" class="!w-8 !rounded-full !bg-primary !text-primary-content" />
+                            </button>
+                        </x-slot:trigger>
+                        <div class="flex items-center gap-2 px-4 py-2">
+                            <x-mary-avatar :placeholder="auth()->user()->initials()" class="!bg-primary !text-primary-content" />
+                            <div>
+                                <div class="font-semibold">{{ auth()->user()->name }}</div>
+                                <div class="text-sm text-on-surface-variant">{{ auth()->user()->email }}</div>
                             </div>
                         </div>
-                    </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
+                        <hr class="border-outline-variant" />
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-4 py-2 hover:bg-base-200" wire:navigate>
+                            <x-mary-icon name="o-cog-6-tooth" class="w-5 h-5" />
                             {{ __('Settings') }}
-                        </flux:menu.item>
-                    </flux:menu.radio.group>
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            @csrf
+                            <button type="submit" class="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-base-200" data-test="logout-button">
+                                <x-mary-icon name="o-arrow-right-start-on-rectangle" class="w-5 h-5" />
+                                {{ __('Log out') }}
+                            </button>
+                        </form>
+                    </x-mary-dropdown>
+                </header>
 
-                    <flux:menu.separator />
+                <main class="flex-1 p-6 lg:p-10">
+                    {{ $slot }}
+                </main>
+            </div>
 
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item
-                            as="button"
-                            type="submit"
-                            icon="arrow-right-start-on-rectangle"
-                            class="w-full cursor-pointer"
-                            data-test="logout-button"
-                        >
-                            {{ __('Log out') }}
-                        </flux:menu.item>
-                    </form>
-                </flux:menu>
-            </flux:dropdown>
-        </flux:header>
+            <div class="drawer-side z-30">
+                <label for="app-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
 
-        {{ $slot }}
+                <aside class="flex flex-col w-64 h-full bg-surface-container-low border-r border-outline-variant">
+                    <div class="flex items-center justify-between px-4 py-5 border-b border-outline-variant">
+                        <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                    </div>
+
+                    <nav class="flex-1 overflow-y-auto px-2 py-4">
+                        <x-mary-menu activate-by-route active-bg-color="bg-surface-container-high">
+                            <x-mary-menu-item title="{{ __('Dashboard') }}" icon="o-home" route="dashboard" />
+                        </x-mary-menu>
+                    </nav>
+
+                    <div class="border-t border-outline-variant px-2 py-2">
+                        <x-desktop-user-menu />
+                    </div>
+                </aside>
+            </div>
+        </div>
 
         @persist('toast')
-            <flux:toast.group>
-                <flux:toast />
-            </flux:toast.group>
+            <x-mary-toast position="toast-top toast-end" />
         @endpersist
 
-        @fluxScripts
+        <script>
+            document.addEventListener('alpine:init', () => {
+                // Sync mary-appearance FROM mary-theme BEFORE Alpine persist reads it.
+                // This ensures that when the user changes theme on the login page
+                // (via x-mary-theme-toggle which manages mary-theme/mary-class), 
+                // the dashboard's Alpine store respects that choice instead of 
+                // defaulting to 'system' and overriding with OS preference.
+                const _maryTheme = localStorage.getItem('mary-theme');
+                if (_maryTheme) {
+                    localStorage.setItem('mary-appearance', _maryTheme);
+                }
+
+                Alpine.store('theme', {
+                    appearance: Alpine.$persist('system').as('mary-appearance'),
+
+                    get isDark() {
+                        return this.appearance === 'dark' ||
+                            (this.appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    },
+
+                    apply() {
+                        const dark = this.isDark;
+                        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+                        document.documentElement.classList.toggle('dark', dark);
+                        localStorage.setItem('mary-theme', JSON.stringify(dark ? 'dark' : 'light'));
+                        localStorage.setItem('mary-class', JSON.stringify(dark ? 'dark' : ''));
+                    },
+
+                    setTheme(val) {
+                        this.appearance = val;
+                        this.apply();
+                    }
+                });
+
+                // Sync theme right after store is created (handles persisted value)
+                Alpine.store('theme').apply();
+            });
+
+            // Re-sync theme after each Livewire SPA navigation
+            document.addEventListener('livewire:navigated', () => {
+                if (Alpine.store('theme')) {
+                    Alpine.store('theme').apply();
+                }
+            });
+
+            // Listen for OS color scheme changes (handles 'system' appearance)
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (Alpine.store('theme') && Alpine.store('theme').appearance === 'system') {
+                    Alpine.store('theme').apply();
+                }
+            });
+        </script>
+        @livewireScripts
     </body>
 </html>

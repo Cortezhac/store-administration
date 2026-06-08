@@ -1,34 +1,30 @@
 <section class="mt-10 space-y-6">
     <div class="relative mb-5">
-        <flux:heading>{{ __('Delete account') }}</flux:heading>
-        <flux:subheading>{{ __('Delete your account and all of its resources') }}</flux:subheading>
+        <h2 class="text-xl font-bold text-on-surface">{{ __('Delete account') }}</h2>
+        <p class="text-on-surface-variant">{{ __('Delete your account and all of its resources') }}</p>
     </div>
 
-    <flux:modal.trigger name="confirm-user-deletion">
-        <flux:button variant="danger" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')">
-            {{ __('Delete account') }}
-        </flux:button>
-    </flux:modal.trigger>
+    <x-mary-button
+        label="{{ __('Delete account') }}"
+        class="btn-error"
+        wire:click="$toggle('showDeleteModal')"
+    />
 
-    <flux:modal name="confirm-user-deletion" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
+    <x-mary-modal wire:model="showDeleteModal" title="{{ __('Are you sure you want to delete your account?') }}" class="max-w-lg">
         <form method="POST" wire:submit="deleteUser" class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('Are you sure you want to delete your account?') }}</flux:heading>
+            <p class="text-on-surface-variant">
+                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+            </p>
 
-                <flux:subheading>
-                    {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
-                </flux:subheading>
-            </div>
+            <x-mary-password
+                wire:model="password"
+                :label="__('Password')"
+            />
 
-            <flux:input wire:model="password" :label="__('Password')" type="password" viewable />
-
-            <div class="flex justify-end space-x-2 rtl:space-x-reverse">
-                <flux:modal.close>
-                    <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
-                </flux:modal.close>
-
-                <flux:button variant="danger" type="submit">{{ __('Delete account') }}</flux:button>
-            </div>
+            <x-slot:actions>
+                <x-mary-button label="{{ __('Cancel') }}" @click="$wire.showDeleteModal = false" />
+                <x-mary-button label="{{ __('Delete account') }}" class="btn-error" type="submit" />
+            </x-slot:actions>
         </form>
-    </flux:modal>
+    </x-mary-modal>
 </section>

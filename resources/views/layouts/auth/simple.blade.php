@@ -1,6 +1,15 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        <script>
+            (function() {
+                var theme = JSON.parse(localStorage.getItem('mary-theme'));
+                var cls = JSON.parse(localStorage.getItem('mary-class'));
+                if (theme) document.documentElement.setAttribute('data-theme', theme);
+                if (cls) document.documentElement.setAttribute('class', cls);
+            })();
+        </script>
+
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">

@@ -1,10 +1,7 @@
 @import 'tailwindcss';
-@import '../../vendor/livewire/flux/dist/flux.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
-@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -22,18 +19,6 @@
     --color-zinc-800: #262626;
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
-
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
-}
-
-@layer theme {
-    .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
-    }
 }
 
 @layer base {
@@ -47,57 +32,57 @@
     }
 }
 
-[data-flux-field]:not(ui-radio, ui-checkbox) {
-    @apply grid gap-2;
-}
-
-[data-flux-label] {
-    @apply  !mb-0 !leading-tight;
-}
-
-input:focus[data-flux-control],
-textarea:focus[data-flux-control],
-select:focus[data-flux-control] {
-    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
-}
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
-
-
-
-/**
-    The lines above are intact.
-    The lines below were added by maryUI installer.
-*/
-
 /** daisyUI */
 @plugin "daisyui" {
     themes: light --default, dark --prefersdark;
 }
 
-/* Custom daisyUI theme colors for light mode */
-@layer base {
-    :root {
-        --color-primary: #3525cd;
-        --color-primary-content: #ffffff;
-        --color-secondary: #855300;
-        --color-secondary-content: #ffffff;
-        --color-accent: #8f0055;
-        --color-accent-content: #ffffff;
-        --color-neutral: #464555;
-        --color-neutral-content: #141b2b;
-        --color-base-100: #f9f9ff;
-        --color-base-200: #e9edff;
-        --color-base-300: #dce2f7;
-        --color-base-content: #141b2b;
-        --color-error: #ba1a1a;
-        --color-error-content: #ffffff;
-    }
+/* Custom light theme — overrides DaisyUI built-in light colors with our MD3 palette */
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    prefersdark: false;
+    color-scheme: light;
+
+    --color-primary: #3525cd;
+    --color-primary-content: #ffffff;
+    --color-secondary: #855300;
+    --color-secondary-content: #ffffff;
+    --color-accent: #8f0055;
+    --color-accent-content: #ffffff;
+    --color-neutral: #464555;
+    --color-neutral-content: #141b2b;
+    --color-base-100: #f9f9ff;
+    --color-base-200: #e9edff;
+    --color-base-300: #dce2f7;
+    --color-base-content: #141b2b;
+    --color-error: #ba1a1a;
+    --color-error-content: #ffffff;
 }
 
-/* Design system colors (Material Design 3) */
+/* Custom dark theme — overrides DaisyUI built-in dark colors to match our MD3 palette */
+@plugin "daisyui/theme" {
+    name: "dark";
+    prefersdark: true;
+    color-scheme: dark;
+
+    --color-primary: #c3c0ff;
+    --color-primary-content: #1a0066;
+    --color-secondary: #f5b93b;
+    --color-secondary-content: #271900;
+    --color-accent: #ff8ec3;
+    --color-accent-content: #54002f;
+    --color-neutral: #c7c4d8;
+    --color-neutral-content: #0f1422;
+    --color-base-100: #0f1422;
+    --color-base-200: #1a1f30;
+    --color-base-300: #232839;
+    --color-base-content: #e3e2f9;
+    --color-error: #ffb4ab;
+    --color-error-content: #690005;
+}
+
+/* Design system colors (Material Design 3) — light */
 :root {
     --surface: #f9f9ff;
     --surface-container-low: #f1f3ff;
@@ -112,8 +97,10 @@ select:focus[data-flux-control] {
     --inverse-primary: #c3c0ff;
     --on-background: #141b2b;
     --surface-tint: #4d44e3;
+
 }
 
+/* Design system colors (Material Design 3) — dark */
 [data-theme="dark"] {
     --surface: #0f1422;
     --surface-container-low: #1a1f30;
@@ -141,11 +128,26 @@ select:focus[data-flux-control] {
 .text-on-surface-variant { color: var(--on-surface-variant); }
 .border-outline-variant { border-color: var(--outline-variant); }
 
+/* Hover variants for surface container colors */
+.hover\:bg-surface-container-high:hover { background-color: var(--surface-container-high); }
+.hover\:bg-surface-container-low:hover { background-color: var(--surface-container-low); }
+
+/* Active/pressed variants */
+.active\:bg-surface-container-highest:active { background-color: var(--surface-container-highest); }
+
+/* Override DaisyUI btn-ghost active state to use MD3 surface instead of base-200 */
+.btn-ghost:active:not(.btn-active) {
+    --btn-bg: var(--surface-container-highest);
+}
+
+/* Override DaisyUI menu active/click state to use MD3 surface instead of neutral/gray */
+.menu {
+    --menu-active-bg: var(--surface-container-high);
+    --menu-active-fg: var(--on-surface);
+}
+
 /* maryUI */
 @source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
-
-/* Theme toggle */
-@custom-variant dark (&:where(.dark, .dark *));
 
 /**
 * Paginator - Traditional style
