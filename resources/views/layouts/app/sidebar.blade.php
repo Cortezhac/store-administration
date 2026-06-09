@@ -73,6 +73,9 @@
                     <nav class="flex-1 overflow-y-auto px-2 py-4">
                         <x-mary-menu activate-by-route active-bg-color="bg-surface-container-high">
                             <x-mary-menu-item title="{{ __('Dashboard') }}" icon="o-home" route="dashboard" />
+                            <x-mary-menu-sub title="{{ __('Categories') }}" icon="o-bookmark">
+                                <x-mary-menu-item title="{{ __('List') }}" icon="o-list-bullet" route="category.index" />
+                            </x-mary-menu-sub>
                         </x-mary-menu>
                     </nav>
 
