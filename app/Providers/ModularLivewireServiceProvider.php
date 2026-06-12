@@ -41,7 +41,7 @@ class ModularLivewireServiceProvider extends ServiceProvider
         $this->registerLivewireComponents($module, $basePath);
 
         // Migraciones
-        $migrationsPath = "{$basePath}/database/migrations";
+        $migrationsPath = "{$basePath}/Database/Migrations";
         if (is_dir($migrationsPath)) {
             $this->loadMigrationsFrom($migrationsPath);
         }

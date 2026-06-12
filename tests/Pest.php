@@ -20,7 +20,7 @@ pest()->extend(TestCase::class)
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in(__DIR__ . '/../modules/Category/resources/views/components');
+    ->in(__DIR__.'/../modules/Category/resources/views/components');
 
 /*
 |--------------------------------------------------------------------------

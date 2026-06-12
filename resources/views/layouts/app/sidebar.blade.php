@@ -75,6 +75,7 @@
                             <x-mary-menu-item title="{{ __('Dashboard') }}" icon="o-home" route="dashboard" />
                             <x-mary-menu-sub title="{{ __('Categories') }}" icon="o-bookmark">
                                 <x-mary-menu-item title="{{ __('List') }}" icon="o-list-bullet" route="category.index" />
+                                <x-mary-menu-item title="{{ __('Create') }}" icon="o-plus" route="category.create" />
                             </x-mary-menu-sub>
                         </x-mary-menu>
                     </nav>

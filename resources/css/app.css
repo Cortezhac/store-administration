@@ -78,8 +78,8 @@
     --color-base-200: #1a1f30;
     --color-base-300: #232839;
     --color-base-content: #e3e2f9;
-    --color-error: #ffb4ab;
-    --color-error-content: #690005;
+    --color-error: #ef4444;
+    --color-error-content: #ffffff;
 }
 
 /* Design system colors (Material Design 3) — light */
@@ -135,6 +135,51 @@
 /* Active/pressed variants */
 .active\:bg-surface-container-highest:active { background-color: var(--surface-container-highest); }
 
+/* DaisyUI primary color token aliases */
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-tertiary { color: var(--color-accent); }
+.text-error { color: var(--color-error); }
+.bg-primary { background-color: var(--color-primary); }
+.text-on-primary { color: var(--color-primary-content); }
+.bg-primary-container { background-color: color-mix(in srgb, var(--color-primary) 20%, transparent); }
+.hover\:bg-primary-container:hover { background-color: color-mix(in srgb, var(--color-primary) 25%, transparent); }
+
+/* Theme-aware fixed tones — lighter in dark mode for proper contrast */
+.bg-primary-fixed {
+    background-color: color-mix(in srgb, var(--color-primary) 15%, var(--color-base-100));
+}
+[data-theme="dark"] .bg-primary-fixed {
+    background-color: color-mix(in srgb, var(--color-primary) 30%, var(--surface-container-low));
+}
+.bg-secondary-fixed {
+    background-color: color-mix(in srgb, var(--color-secondary) 15%, var(--color-base-100));
+}
+[data-theme="dark"] .bg-secondary-fixed {
+    background-color: color-mix(in srgb, var(--color-secondary) 30%, var(--surface-container-low));
+}
+.bg-tertiary-fixed {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, var(--color-base-100));
+}
+[data-theme="dark"] .bg-tertiary-fixed {
+    background-color: color-mix(in srgb, var(--color-accent) 30%, var(--surface-container-low));
+}
+
+/* Dark mode primary container needs more opacity for visibility */
+[data-theme="dark"] .bg-primary-container {
+    background-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+[data-theme="dark"] .hover\:bg-primary-container:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+/* Dark mode: force native form elements to use dark color-scheme for readable dropdowns/inputs */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    color-scheme: dark;
+}
+
 /* Override DaisyUI btn-ghost active state to use MD3 surface instead of base-200 */
 .btn-ghost:active:not(.btn-active) {
     --btn-bg: var(--surface-container-highest);
@@ -148,6 +193,21 @@
 
 /* maryUI */
 @source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
+
+/* Expanding ring animation — border grows outward and fades, no disappearance */
+@keyframes expand-ring {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+.animate-expand-ring {
+    animation: expand-ring 2s ease-out infinite;
+}
 
 /**
 * Paginator - Traditional style
