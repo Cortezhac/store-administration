@@ -57,7 +57,7 @@
                     </x-mary-dropdown>
                 </header>
 
-                <main class="flex-1 p-6 lg:p-10">
+                <main class="flex-1 pt-6 px-0 lg:p-10">
                     {{ $slot }}
                 </main>
             </div>
