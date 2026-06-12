@@ -1,12 +1,11 @@
-<div class="pt-24 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<x-shared::page-wrapper>
     {{-- Breadcrumbs & Header Actions --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-            <nav class="flex items-center gap-2 text-on-surface-variant text-xs font-medium mb-2">
-                <a href="{{ route('category.index') }}" wire:navigate class="hover:text-primary transition-colors">{{ __('Categorías') }}</a>
-                <flux:icon.chevron-right class="size-4" />
-                <span class="text-primary font-bold">{{ $category->name }}</span>
-            </nav>
+            <x-shared::breadcrumb :items="[
+                ['label' => __('Categorías'), 'route' => route('category.index')],
+                ['label' => $category->name],
+            ]" />
             <h2 class="text-3xl font-semibold text-on-surface tracking-tight">{{ __('Detalle de Categoría') }}</h2>
         </div>
         <div class="flex items-center gap-3">
@@ -195,4 +194,4 @@
             </div>
         </aside>
     </div>
-</div>
+</x-shared::page-wrapper>

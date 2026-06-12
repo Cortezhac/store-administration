@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 
@@ -24,6 +25,17 @@ class ModularLivewireServiceProvider extends ServiceProvider
     {
         foreach ($this->modules as $module) {
             $this->registerModule($module);
+        }
+
+        $this->registerSharedComponents();
+    }
+
+    protected function registerSharedComponents(): void
+    {
+        $path = base_path('modules/Shared/resources/views/components');
+
+        if (is_dir($path)) {
+            Blade::anonymousComponentPath($path, 'shared');
         }
     }
 

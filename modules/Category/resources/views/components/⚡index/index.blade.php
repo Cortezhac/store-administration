@@ -38,146 +38,96 @@
                 />
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <p class="text-xs font-medium text-on-surface-variant">
-                {{ __('Mostrando :from-:to de :total categorías', [
-                    'from' => $categories->firstItem(),
-                    'to' => $categories->lastItem(),
-                    'total' => $categories->total(),
-                ]) }}
-            </p>
-            @if ($categories->hasPages())
-                <div class="flex rounded-lg border border-outline-variant overflow-hidden">
-                    <button
-                        wire:click="previousPage"
-                        @if ($categories->onFirstPage()) disabled @endif
-                        class="p-2 hover:bg-surface-container-high border-r border-outline-variant transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                        <flux:icon.chevron-left class="size-5" />
-                    </button>
-                    <button
-                        wire:click="nextPage"
-                        @if (!$categories->hasMorePages()) disabled @endif
-                        class="p-2 hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                        <flux:icon.chevron-right class="size-5" />
-                    </button>
-                </div>
-            @endif
-        </div>
     </div>
 
-    {{-- Categories Data Table --}}
-    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-surface-container-low border-b border-outline-variant">
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider w-16">{{ __('Sort') }}</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{{ __('Name') }}</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider hidden md:table-cell">{{ __('Description') }}</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{{ __('Status') }}</th>
-                    <th class="px-6 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">{{ __('Actions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-variant">
-                @forelse ($categories as $row)
-                    <tr class="hover:bg-surface-container transition-colors group">
-                        <td class="px-6 py-5 text-sm text-on-surface-variant">{{ str_pad($row->sort_order, 2, '0', STR_PAD_LEFT) }}</td>
-                        <td class="px-6 py-5">
-                            <div class="flex items-center gap-4">
-                                {{-- Icon / Avatar --}}
-                                @if ($row->icon)
-                                    <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-outline-variant">
-                                        <img
-                                            src="{{ $row->iconUrl() }}"
-                                            alt="{{ $row->name }}"
-                                            class="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                @else
-                                    <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center flex-shrink-0">
-                                        <span class="text-sm font-semibold text-primary">{{ strtoupper(substr($row->name, 0, 1)) }}</span>
-                                    </div>
-                                @endif
-                                <div>
-                                    <a href="{{ route('category.show', $row) }}" wire:navigate class="font-medium text-sm text-on-surface hover:text-primary transition-colors">
-                                        {{ $row->name }}
-                                    </a>
-                                    @if ($row->parent)
-                                        <p class="text-xs text-on-surface-variant mt-0.5">{{ $row->parent->name }}</p>
-                                    @endif
-                                </div>
+    {{-- Data Table --}}
+    <x-shared::data-table
+        :rows="$categories"
+        :paginator="$categories"
+        :headers="[
+            ['label' => __('Sort'), 'class' => 'w-16'],
+            __('Name'),
+            ['label' => __('Description'), 'class' => 'hidden md:table-cell'],
+            __('Status'),
+            __('Actions'),
+        ]"
+    >
+        @foreach ($categories as $row)
+            <x-shared::data-table.row>
+                <x-shared::data-table.cell class="text-sm text-on-surface-variant">{{ str_pad($row->sort_order, 2, '0', STR_PAD_LEFT) }}</x-shared::data-table.cell>
+                <x-shared::data-table.cell>
+                    <div class="flex items-center gap-4">
+                        @if ($row->icon)
+                            <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-outline-variant">
+                                <img
+                                    src="{{ $row->iconUrl() }}"
+                                    alt="{{ $row->name }}"
+                                    class="w-full h-full object-cover"
+                                />
                             </div>
-                        </td>
-                        <td class="px-6 py-5 text-sm text-on-surface-variant hidden md:table-cell">
-                            {{ $row->description ? Str::limit($row->description, 100) : __('No description') }}
-                        </td>
-                        <td class="px-6 py-5">
-                            @if ($row->is_active)
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
-                                    {{ __('Active') }}
-                                </span>
-                            @else
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant border border-outline-variant">
-                                    {{ __('Inactive') }}
-                                </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-5 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <a
-                                    href="{{ route('category.edit', $row) }}"
-                                    wire:navigate
-                                    class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-surface-container-high inline-flex"
-                                >
-                                    <flux:icon.pencil class="size-5" />
-                                </a>
-                                <button
-                                    wire:click="delete({{ $row->id }})"
-                                    wire:confirm="{{ __('Are you sure you want to delete this category?') }}"
-                                    class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-lg hover:bg-surface-container-high"
-                                >
-                                    <flux:icon.trash class="size-5" />
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
-                            <flux:icon.tag class="size-12 text-on-surface-variant" />
-                            <p class="mt-2 text-on-surface-variant">{{ __('No categories found.') }}</p>
-                            <a href="{{ route('category.create') }}" wire:navigate class="mt-4 inline-flex items-center gap-2 text-primary hover:underline text-sm font-medium">
-                                <flux:icon.plus-circle class="size-4" />
-                                {{ __('Create your first category') }}
-                            </a>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        {{-- Pagination Footer --}}
-        @if ($categories->hasPages())
-            <div class="bg-surface-container-low p-4 flex items-center justify-between border-t border-outline-variant">
-                <a href="{{ route('category.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline transition-all">
-                    {{ __('Ver todas las categorías') }}
-                </a>
-                <div class="flex gap-2">
-                    @for ($i = 1; $i <= $categories->lastPage(); $i++)
-                        @if ($i === $categories->currentPage())
-                            <span class="px-3 py-1 bg-surface-container-lowest border border-outline-variant rounded text-xs font-medium">{{ $i }}</span>
                         @else
-                            <button
-                                wire:click="gotoPage({{ $i }})"
-                                class="px-3 py-1 hover:bg-surface-container-high rounded text-xs font-medium transition-colors"
-                            >
-                                {{ $i }}
-                            </button>
+                            <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center flex-shrink-0">
+                                <span class="text-sm font-semibold text-primary">{{ strtoupper(substr($row->name, 0, 1)) }}</span>
+                            </div>
                         @endif
-                    @endfor
-                </div>
-            </div>
-        @endif
-    </div>
+                        <div>
+                            <a href="{{ route('category.show', $row) }}" wire:navigate class="font-medium text-sm text-on-surface hover:text-primary transition-colors">
+                                {{ $row->name }}
+                            </a>
+                            @if ($row->parent)
+                                <p class="text-xs text-on-surface-variant mt-0.5">{{ $row->parent->name }}</p>
+                            @endif
+                        </div>
+                    </div>
+                </x-shared::data-table.cell>
+                <x-shared::data-table.cell class="text-sm text-on-surface-variant hidden md:table-cell">
+                    {{ $row->description ? Str::limit($row->description, 100) : __('No description') }}
+                </x-shared::data-table.cell>
+                <x-shared::data-table.cell>
+                    @if ($row->is_active)
+                        <span class="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                            {{ __('Active') }}
+                        </span>
+                    @else
+                        <span class="px-3 py-1 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant border border-outline-variant">
+                            {{ __('Inactive') }}
+                        </span>
+                    @endif
+                </x-shared::data-table.cell>
+                <x-shared::data-table.cell class="text-right">
+                    <div class="flex items-center justify-end gap-1">
+                        <a
+                            href="{{ route('category.edit', $row) }}"
+                            wire:navigate
+                            class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-lg hover:bg-surface-container-high inline-flex"
+                        >
+                            <flux:icon.pencil class="size-5" />
+                        </a>
+                        <button
+                            wire:click="delete({{ $row->id }})"
+                            wire:confirm="{{ __('Are you sure you want to delete this category?') }}"
+                            class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-lg hover:bg-surface-container-high"
+                        >
+                            <flux:icon.trash class="size-5" />
+                        </button>
+                    </div>
+                </x-shared::data-table.cell>
+            </x-shared::data-table.row>
+        @endforeach
+
+        <x-slot:paginationLeft>
+            <a href="{{ route('category.index') }}" wire:navigate class="font-medium text-primary hover:underline transition-all">
+                {{ __('Ver todas las categorías') }}
+            </a>
+        </x-slot:paginationLeft>
+
+        <x-slot:empty>
+            <flux:icon.tag class="size-12 text-on-surface-variant mx-auto" />
+            <p class="mt-2 text-on-surface-variant">{{ __('No categories found.') }}</p>
+            <a href="{{ route('category.create') }}" wire:navigate class="mt-4 inline-flex items-center gap-2 text-primary hover:underline text-sm font-medium">
+                <flux:icon.plus-circle class="size-4" />
+                {{ __('Create your first category') }}
+            </a>
+        </x-slot:empty>
+    </x-shared::data-table>
 </div>
