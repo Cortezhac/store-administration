@@ -22,11 +22,12 @@
 
             <div class="drawer-content flex flex-col">
                 <header class="flex items-center justify-between lg:hidden px-4 py-3 border-b border-outline-variant bg-surface-container-low">
-                    <div class="flex items-center gap-2">
-                        <label for="app-drawer" class="btn btn-ghost btn-circle">
-                            <x-mary-icon name="o-bars-3" class="w-6 h-6" />
+                    <div class="flex items-center gap-2 flex-1">
+                        <label for="app-drawer" class="btn btn-ghost w-full flex items-center gap-2 justify-start" data-test="sidebar-menu-button">
+                            <x-mary-icon name="o-bars-3" class="w-6 h-6 flex-shrink-0" />
+                            <span class="text-sm text-on-surface-variant font-medium truncate">{{ $title ?? __('Menú') }}</span>
                         </label>
-                        <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
+                        <x-app-logo href="{{ route('dashboard') }}" wire:navigate class="flex-shrink-0" />
                     </div>
 
                     <x-mary-dropdown>

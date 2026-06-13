@@ -7,11 +7,11 @@
         <button {{ $attributes->merge(['class' => 'flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-surface-container-high active:bg-surface-container-highest transition-colors']) }} data-test="sidebar-menu-button">
             <x-mary-avatar :placeholder="auth()->user()->initials()" class="!w-8 !rounded-full !bg-primary !text-primary-content" />
             {{-- Desktop: name, email, chevron --}}
-            <div class="hidden lg:block flex-1 text-left min-w-0">
+            <div class="lg:block flex-1 text-left min-w-0 w-36">
                 <div class="text-sm font-semibold truncate text-on-surface">{{ auth()->user()->name }}</div>
                 <div class="text-xs truncate text-on-surface-variant">{{ auth()->user()->email }}</div>
             </div>
-            <x-mary-icon name="o-chevron-double-down" class="hidden lg:block w-4 h-4 text-on-surface-variant" />
+            <x-mary-icon name="o-chevron-double-down" class="lg:block w-4 h-4 text-on-surface-variant" />
         </button>
     </x-slot:trigger>
 
