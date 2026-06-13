@@ -1,4 +1,4 @@
-<div>
+<x-shared::page-wrapper>
     @php($categories = $this->getCategories())
 
     {{-- Title & Action --}}
@@ -130,4 +130,4 @@
             </a>
         </x-slot:empty>
     </x-shared::data-table>
-</div>
+</x-shared::page-wrapper>
