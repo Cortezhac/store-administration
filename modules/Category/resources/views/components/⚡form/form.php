@@ -2,9 +2,11 @@
 
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
-use Livewire\TemporaryUploadedFile;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Modules\Category\Forms\CreateForm;
 use Modules\Category\Models\Category;
+use Modules\Category\Services\CRUDService;
 
 new class extends Component
 {
@@ -12,49 +14,31 @@ new class extends Component
 
     public ?Category $category = null;
 
-    public string $name = '';
-
-    public string $slug = '';
-
-    public ?string $description = null;
+    public CreateForm $form;
 
     /** @var ?TemporaryUploadedFile */
     public $iconUpload = null;
-
-    public ?int $parent_id = null;
-
-    public int $sort_order = 0;
-
-    public bool $is_active = true;
 
     public bool $removeIcon = false;
 
     public function mount(?Category $category = null): void
     {
         $this->category = $category;
+        $this->form->categoryId = $category?->id;
 
         if ($category) {
-            $this->name = $category->name;
-            $this->slug = $category->slug;
-            $this->description = $category->description;
-            $this->parent_id = $category->parent_id;
-            $this->sort_order = $category->sort_order;
-            $this->is_active = $category->is_active;
+            $this->form->name = $category->name;
+            $this->form->slug = $category->slug;
+            $this->form->description = $category->description;
+            $this->form->parent_id = $category->parent_id;
+            $this->form->sort_order = $category->sort_order;
+            $this->form->is_active = $category->is_active;
         }
     }
 
-    public function save(): void
+    public function save(CRUDService $crudService): void
     {
         $this->validate();
-
-        $data = [
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-            'parent_id' => $this->parent_id,
-            'sort_order' => $this->sort_order,
-            'is_active' => $this->is_active,
-        ];
 
         if ($this->iconUpload) {
             // Delete old icon if it exists
@@ -62,18 +46,18 @@ new class extends Component
                 Storage::disk('local')->delete($this->category->icon);
             }
 
-            $data['icon'] = $this->iconUpload->store('categories', 'local');
+            $this->form->icon = $this->iconUpload->store('categories', 'local');
         }
 
         if ($this->removeIcon && $this->category && $this->category->icon) {
             Storage::disk('local')->delete($this->category->icon);
-            $data['icon'] = null;
+            $this->form->icon = null;
         }
 
         if ($this->category) {
-            $this->category->update($data);
+            $this->category->update($this->form->all());
         } else {
-            $this->category = Category::create($data);
+            $this->category = $crudService->create($this->form);
         }
 
         $this->redirect(route('category.index'), navigate: true);
@@ -88,26 +72,9 @@ new class extends Component
     /** @return array<string, list<mixed>> */
     protected function rules(): array
     {
-        $rules = [
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:categories,slug,'.($this->category?->id ?? 'NULL')],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'parent_id' => ['nullable', 'exists:categories,id'],
-            'sort_order' => ['required', 'integer', 'min:0', 'max:999'],
-            'is_active' => ['required', 'boolean'],
+        return [
             'iconUpload' => ['nullable', 'image', 'mimes:png,jpg,jpeg,svg,webp', 'max:1024'], // max 1 MB
         ];
-
-        // Prevent selecting self as parent
-        if ($this->category) {
-            $rules['parent_id'][] = function (string $attribute, mixed $value, Closure $fail) {
-                if ((int) $value === $this->category->id) {
-                    $fail(__('A category cannot be its own parent.'));
-                }
-            };
-        }
-
-        return $rules;
     }
 
     /** @return array<int, array{id: int, name: string}> */

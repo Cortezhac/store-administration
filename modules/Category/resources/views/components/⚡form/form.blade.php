@@ -42,14 +42,14 @@
                     <label for="name" class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Nombre') }}</label>
                     <input
                         id="name"
-                        wire:model="name"
+                        wire:model="form.name"
                         type="text"
                         required
                         autofocus
                         class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 text-sm outline-none text-on-surface placeholder:text-on-surface-variant/50"
                         placeholder="{{ __('Nombre de la categoría') }}"
                     />
-                    @error('name')
+                    @error('form.name')
                         <p class="text-error text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -59,13 +59,13 @@
                     <label for="slug" class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Slug') }}</label>
                     <input
                         id="slug"
-                        wire:model="slug"
+                        wire:model="form.slug"
                         type="text"
                         required
                         class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 text-sm outline-none text-on-surface placeholder:text-on-surface-variant/50"
                         placeholder="{{ __('url-friendly-identifier') }}"
                     />
-                    @error('slug')
+                    @error('form.slug')
                         <p class="text-error text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -75,12 +75,12 @@
                     <label for="description" class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Descripción') }}</label>
                     <textarea
                         id="description"
-                        wire:model="description"
+                        wire:model="form.description"
                         rows="3"
                         class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 text-sm outline-none text-on-surface placeholder:text-on-surface-variant/50 resize-none"
                         placeholder="{{ __('Descripción opcional de la categoría') }}"
                     ></textarea>
-                    @error('description')
+                    @error('form.description')
                         <p class="text-error text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -90,7 +90,7 @@
                     <label for="parent_id" class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Categoría Padre') }}</label>
                     <select
                         id="parent_id"
-                        wire:model="parent_id"
+                        wire:model="form.parent_id"
                         class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 text-sm outline-none text-on-surface"
                     >
                         <option value="" class="bg-surface-container-lowest text-on-surface-variant">{{ __('Ninguna (nivel raíz)') }}</option>
@@ -98,7 +98,7 @@
                             <option value="{{ $option['id'] }}" class="bg-surface-container-lowest text-on-surface">{{ $option['name'] }}</option>
                         @endforeach
                     </select>
-                    @error('parent_id')
+                    @error('form.parent_id')
                         <p class="text-error text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -108,13 +108,13 @@
                     <label for="sort_order" class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Orden') }}</label>
                     <input
                         id="sort_order"
-                        wire:model="sort_order"
+                        wire:model="form.sort_order"
                         type="number"
                         min="0"
                         max="999"
                         class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 text-sm outline-none text-on-surface placeholder:text-on-surface-variant/50"
                     />
-                    @error('sort_order')
+                    @error('form.sort_order')
                         <p class="text-error text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -123,10 +123,10 @@
                 <div class="space-y-1.5">
                     <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Estado') }}</label>
                     <x-mary-toggle
-                        wire:model="is_active"
+                        wire:model="form.is_active"
                         :label="__('Categoría activa')"
                     />
-                    @error('is_active')
+                    @error('form.is_active')
                         <p class="text-error text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
