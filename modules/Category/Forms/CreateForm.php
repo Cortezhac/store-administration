@@ -55,4 +55,13 @@ class CreateForm extends Form
 
         return $category;
     }
+
+    public function update(CRUDService $service, Category $category): Category
+    {
+        $this->validate();
+
+        $category = $service->update($category, $this->except('categoryId'));
+
+        return $category;
+    }
 }

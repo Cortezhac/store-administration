@@ -55,7 +55,7 @@ new class extends Component
         }
 
         if ($this->category) {
-            $this->category->update($this->form->all());
+            $this->category = $crudService->update($this->category, $this->form->except('categoryId'));
         } else {
             $this->category = $crudService->create($this->form);
         }
