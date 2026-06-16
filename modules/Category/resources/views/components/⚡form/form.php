@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -33,6 +32,7 @@ new class extends Component
             $this->form->parent_id = $category->parent_id;
             $this->form->sort_order = $category->sort_order;
             $this->form->is_active = $category->is_active;
+            $this->form->icon = $category->icon;
         }
     }
 
@@ -40,24 +40,17 @@ new class extends Component
     {
         $this->validate();
 
-        if ($this->iconUpload) {
-            // Delete old icon if it exists
-            if ($this->category && $this->category->icon) {
-                Storage::disk('local')->delete($this->category->icon);
-            }
-
-            $this->form->icon = $this->iconUpload->store('categories', 'local');
-        }
-
-        if ($this->removeIcon && $this->category && $this->category->icon) {
-            Storage::disk('local')->delete($this->category->icon);
-            $this->form->icon = null;
-        }
+        $iconPath = $this->iconUpload?->store('categories', 'local');
 
         if ($this->category) {
-            $this->category = $crudService->update($this->category, $this->form->except('categoryId'));
+            $this->category = $crudService->update(
+                $this->category,
+                $this->form,
+                iconPath: $iconPath,
+                removeIcon: $this->removeIcon,
+            );
         } else {
-            $this->category = $crudService->create($this->form);
+            $this->category = $crudService->create($this->form, iconPath: $iconPath);
         }
 
         $this->redirect(route('category.index'), navigate: true);

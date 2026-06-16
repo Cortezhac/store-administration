@@ -4,6 +4,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Category\Models\Category;
+use Modules\Category\Services\CRUDService;
 
 new class extends Component
 {
@@ -13,10 +14,9 @@ new class extends Component
 
     public bool $activeOnly = false;
 
-    public function delete(Category $category): void
+    public function delete(Category $category, CRUDService $crudService): void
     {
-        $category->delete();
-
+        $crudService->delete($category);
         $this->redirect(route('category.index'));
     }
 

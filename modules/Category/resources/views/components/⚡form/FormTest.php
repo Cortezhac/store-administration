@@ -85,6 +85,34 @@ it('can edit a category and upload new icon', function () {
     Storage::disk('local')->assertExists($category->icon);
 });
 
+it('replaces existing icon and deletes the old one', function () {
+    Storage::fake('local');
+
+    actingAs($this->user);
+
+    $oldFile = UploadedFile::fake()->image('old-icon.png', 32, 32);
+    $oldPath = Storage::disk('local')->putFile('categories', $oldFile);
+
+    $category = Category::factory()->create(['icon' => $oldPath]);
+
+    $newFile = UploadedFile::fake()->image('new-icon.png', 64, 64);
+
+    Livewire::test('category::form', ['category' => $category])
+        ->set('form.name', 'Updated Name')
+        ->set('iconUpload', $newFile)
+        ->call('save')
+        ->assertRedirect(route('category.index'));
+
+    $category->refresh();
+
+    expect($category->name)->toBe('Updated Name');
+    expect($category->icon)->not->toBeNull();
+    expect($category->icon)->not->toBe($oldPath);
+
+    Storage::disk('local')->assertMissing($oldPath);
+    Storage::disk('local')->assertExists($category->icon);
+});
+
 it('can remove icon from category', function () {
     Storage::fake('local');
 
