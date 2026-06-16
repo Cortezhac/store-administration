@@ -25,7 +25,7 @@
                     <div class="flex items-center gap-2 flex-1">
                         <label for="app-drawer" class="btn btn-ghost w-full flex items-center gap-2 justify-start" data-test="sidebar-menu-button">
                             <x-mary-icon name="o-bars-3" class="w-6 h-6 flex-shrink-0" />
-                            <span class="text-sm text-on-surface-variant font-medium truncate">{{ $title ?? __('Menú') }}</span>
+                            <span class="text-sm text-on-surface-variant font-medium truncate">{{ $title ?? __('shared.menu') }}</span>
                         </label>
                         <x-app-logo href="{{ route('dashboard') }}" wire:navigate class="flex-shrink-0" />
                     </div>
@@ -46,13 +46,13 @@
                         <hr class="border-outline-variant" />
                         <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-4 py-2 hover:bg-base-200" wire:navigate>
                             <x-mary-icon name="o-cog-6-tooth" class="w-5 h-5" />
-                            {{ __('Settings') }}
+                            {{ __('shared.settings') }}
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="w-full">
                             @csrf
                             <button type="submit" class="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-base-200" data-test="logout-button">
                                 <x-mary-icon name="o-arrow-right-start-on-rectangle" class="w-5 h-5" />
-                                {{ __('Log out') }}
+                                {{ __('shared.log_out') }}
                             </button>
                         </form>
                     </x-mary-dropdown>
@@ -73,10 +73,10 @@
 
                     <nav class="flex-1 overflow-y-auto px-2 py-4">
                         <x-mary-menu activate-by-route active-bg-color="bg-surface-container-high">
-                            <x-mary-menu-item title="{{ __('Dashboard') }}" icon="o-home" route="dashboard" />
-                            <x-mary-menu-sub title="{{ __('Categories') }}" icon="o-bookmark">
-                                <x-mary-menu-item title="{{ __('List') }}" icon="o-list-bullet" route="category.index" />
-                                <x-mary-menu-item title="{{ __('Create') }}" icon="o-plus" route="category.create" />
+                            <x-mary-menu-item title="{{ __('shared.dashboard') }}" icon="o-home" route="dashboard" />
+                            <x-mary-menu-sub title="{{ __('shared.categories') }}" icon="o-bookmark">
+                                <x-mary-menu-item title="{{ __('shared.list') }}" icon="o-list-bullet" route="category.index" />
+                                <x-mary-menu-item title="{{ __('shared.create') }}" icon="o-plus" route="category.create" />
                             </x-mary-menu-sub>
                         </x-mary-menu>
                     </nav>

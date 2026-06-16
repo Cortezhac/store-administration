@@ -1,49 +1,49 @@
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <h2 class="sr-only">{{ __('Security settings') }}</h2>
+    <h2 class="sr-only">{{ __('profile.security_settings') }}</h2>
 
-    <x-settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
+    <x-settings.layout :heading="__('profile.update_password')" :subheading="__('profile.ensure_secure_password')">
         <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
             <x-mary-password
                 wire:model="current_password"
-                :label="__('Current password')"
+                :label="__('profile.current_password')"
                 required
                 autocomplete="current-password"
             />
             <x-mary-password
                 wire:model="password"
-                :label="__('New password')"
+                :label="__('profile.new_password')"
                 required
                 autocomplete="new-password"
             />
             <x-mary-password
                 wire:model="password_confirmation"
-                :label="__('Confirm password')"
+                :label="__('profile.confirm_password')"
                 required
                 autocomplete="new-password"
             />
 
             <div class="flex items-center gap-4">
-                <x-mary-button label="{{ __('Save') }}" type="submit" class="btn-primary" data-test="update-password-button" />
+                <x-mary-button label="{{ __('profile.save') }}" type="submit" class="btn-primary" data-test="update-password-button" />
             </div>
         </form>
 
         @if ($canManageTwoFactor)
             <section class="mt-12">
-                <h2 class="text-xl font-bold text-on-surface">{{ __('Two-factor authentication') }}</h2>
-                <p class="text-on-surface-variant">{{ __('Manage your two-factor authentication settings') }}</p>
+                <h2 class="text-xl font-bold text-on-surface">{{ __('profile.two_factor_auth') }}</h2>
+                <p class="text-on-surface-variant">{{ __('profile.manage_2fa') }}</p>
 
                 <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
                     @if ($twoFactorEnabled)
                         <div class="space-y-4">
                             <p class="text-on-surface">
-                                {{ __('You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.') }}
+                                {{ __('profile.enabled_2fa_prompt') }}
                             </p>
 
                             <div class="flex justify-start">
                                 <x-mary-button
-                                    label="{{ __('Disable 2FA') }}"
+                                    label="{{ __('profile.disable_2fa') }}"
                                     class="btn-error"
                                     wire:click="disable"
                                 />
@@ -54,11 +54,11 @@
                     @else
                         <div class="space-y-4">
                             <p class="text-on-surface-variant">
-                                {{ __('When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.') }}
+                                {{ __('profile.disabled_2fa_prompt') }}
                             </p>
 
                             <x-mary-button
-                                label="{{ __('Enable 2FA') }}"
+                                label="{{ __('profile.enable_2fa') }}"
                                 class="btn-primary"
                                 wire:click="enable"
                             />
@@ -116,13 +116,13 @@
 
                             <div class="flex items-center space-x-3">
                                 <x-mary-button
-                                    label="{{ __('Back') }}"
+                                    label="{{ __('profile.back') }}"
                                     class="btn-outline flex-1"
                                     wire:click="resetVerification"
                                 />
 
                                 <x-mary-button
-                                    label="{{ __('Confirm') }}"
+                                    label="{{ __('profile.confirm') }}"
                                     class="btn-primary flex-1"
                                     wire:click="confirmTwoFactor"
                                     x-bind:disabled="$wire.code.length < 6"
@@ -166,7 +166,7 @@
                             <div class="relative flex items-center justify-center w-full">
                                 <div class="absolute inset-0 w-full h-px top-1/2 bg-outline-variant"></div>
                                 <span class="relative px-2 text-sm bg-surface text-on-surface-variant">
-                                    {{ __('or, enter the code manually') }}
+                                    {{ __('profile.or_enter_manually') }}
                                 </span>
                             </div>
 
@@ -216,8 +216,8 @@
 
         @if ($canManagePasskeys)
             <section class="mt-12">
-                <h2 class="text-xl font-bold text-on-surface">{{ __('Passkeys') }}</h2>
-                <p class="text-on-surface-variant">{{ __('Manage your passkeys for passwordless sign-in') }}</p>
+                <h2 class="text-xl font-bold text-on-surface">{{ __('profile.passkeys') }}</h2>
+                <p class="text-on-surface-variant">{{ __('profile.manage_passkeys') }}</p>
 
                 <div class="mt-6 flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
                     <div class="border rounded-lg border-outline-variant overflow-hidden">
@@ -255,8 +255,8 @@
                                 <div class="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-surface-container-low">
                                     <x-mary-icon name="o-key" class="size-7 text-on-surface-variant" />
                                 </div>
-                                <p class="font-medium text-on-surface">{{ __('No passkeys yet') }}</p>
-                                <p class="mt-1 text-on-surface-variant">{{ __('Add a passkey to sign in without a password') }}</p>
+                                <p class="font-medium text-on-surface">{{ __('profile.no_passkeys_yet') }}</p>
+                                <p class="mt-1 text-on-surface-variant">{{ __('profile.add_passkey_to_signin') }}</p>
                             </div>
                         @endforelse
                     </div>
@@ -274,7 +274,7 @@
     >
         <div class="space-y-6">
             <div class="space-y-2">
-                <h3 class="text-lg font-bold text-on-surface">{{ __('Remove passkey') }}</h3>
+                <h3 class="text-lg font-bold text-on-surface">{{ __('profile.remove_passkey') }}</h3>
                 <p class="text-on-surface-variant">
                     {{ __('Are you sure you want to remove the passkey ":name"? You will no longer be able to use it to sign in.', ['name' => $deletingPasskeyName]) }}
                 </p>
@@ -282,12 +282,12 @@
 
             <div class="flex gap-3 justify-end">
                 <x-mary-button
-                    label="{{ __('Cancel') }}"
+                    label="{{ __('profile.cancel') }}"
                     class="btn-outline"
                     wire:click="closeDeleteModal"
                 />
                 <x-mary-button
-                    label="{{ __('Remove passkey') }}"
+                    label="{{ __('profile.remove_passkey') }}"
                     class="btn-error"
                     wire:click="deletePasskey"
                 />

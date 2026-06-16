@@ -27,14 +27,14 @@
 
     <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-high active:bg-surface-container-highest" wire:navigate>
         <x-mary-icon name="o-cog-6-tooth" class="w-5 h-5" />
-        {{ __('Settings') }}
+        {{ __('shared.settings') }}
     </a>
 
     <form method="POST" action="{{ route('logout') }}" class="w-full">
         @csrf
         <button type="submit" class="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-surface-container-high active:bg-surface-container-highest" data-test="logout-button">
             <x-mary-icon name="o-arrow-right-start-on-rectangle" class="w-5 h-5" />
-            {{ __('Log out') }}
+            {{ __('shared.log_out') }}
         </button>
     </form>
 </x-mary-dropdown>

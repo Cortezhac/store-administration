@@ -1,9 +1,9 @@
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <h2 class="sr-only">{{ __('Appearance settings') }}</h2>
+    <h2 class="sr-only">{{ __('profile.appearance_settings') }}</h2>
 
-    <x-settings.layout :heading="__('Appearance')" :subheading=" __('Update the appearance settings for your account')">
+    <x-settings.layout :heading="__('profile.appearance')" :subheading=" __('profile.update_appearance')">
         <div
             x-data
             class="flex flex-wrap gap-2"

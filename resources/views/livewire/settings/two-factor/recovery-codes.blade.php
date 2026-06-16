@@ -6,10 +6,10 @@
     <div class="px-6 space-y-2">
         <div class="flex items-center gap-2">
             <x-mary-icon name="o-lock-closed" class="size-4" />
-            <h3 class="text-lg font-bold text-on-surface">{{ __('2FA recovery codes') }}</h3>
+            <h3 class="text-lg font-bold text-on-surface">{{ __('profile.two_fa_recovery_codes') }}</h3>
         </div>
         <p class="text-on-surface-variant">
-            {{ __('Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.') }}
+            {{ __('profile.recovery_codes_desc') }}
         </p>
     </div>
 
@@ -17,7 +17,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <x-mary-button
                 x-show="!showRecoveryCodes"
-                label="{{ __('View recovery codes') }}"
+                label="{{ __('profile.view_recovery_codes') }}"
                 icon="o-eye"
                 class="btn-primary"
                 @click="showRecoveryCodes = true;"
@@ -27,7 +27,7 @@
 
             <x-mary-button
                 x-show="showRecoveryCodes"
-                label="{{ __('Hide recovery codes') }}"
+                label="{{ __('profile.hide_recovery_codes') }}"
                 icon="o-eye-slash"
                 class="btn-primary"
                 @click="showRecoveryCodes = false"
@@ -38,7 +38,7 @@
             @if (filled($recoveryCodes))
                 <x-mary-button
                     x-show="showRecoveryCodes"
-                    label="{{ __('Regenerate codes') }}"
+                    label="{{ __('profile.regenerate_codes') }}"
                     icon="o-arrow-path"
                     class="btn-ghost"
                     wire:click="regenerateRecoveryCodes"
@@ -62,7 +62,7 @@
                     <div
                         class="grid gap-1 p-4 font-mono text-sm rounded-lg bg-surface-container-lowest dark:bg-white/5"
                         role="list"
-                        aria-label="{{ __('Recovery codes') }}"
+                        aria-label="{{ __('profile.recovery_codes') }}"
                     >
                         @foreach($recoveryCodes as $code)
                             <div
@@ -75,7 +75,7 @@
                         @endforeach
                     </div>
                     <p class="text-xs text-on-surface-variant">
-                        {{ __('Each recovery code can be used once to access your account and will be removed after use. If you need more, click Regenerate codes above.') }}
+                        {{ __('profile.each_code_once') }}
                     </p>
                 @endif
             </div>
