@@ -1,0 +1,17 @@
+.env
+.git
+.gitattributes
+.github
+.gitignore
+.vscode
+.agents
+.claude
+docker/
+node_modules/
+vendor/
+storage/
+bootstrap/cache/
+*.md
+AGENTS.md
+CLAUDE.md
+opencode.json

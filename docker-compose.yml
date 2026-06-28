@@ -1,0 +1,89 @@
+services:
+  php-fpm:
+    build:
+      context: ./docker/php
+    container_name: store-php-fpm
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/app:delegated
+      - storage-data:/var/www/app/storage
+    networks:
+      - web
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  queue:
+    build:
+      context: ./docker/php
+    container_name: store-queue
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/app:delegated
+      - storage-data:/var/www/app/storage
+    command: php artisan queue:work --tries=3 --timeout=90 --sleep=3
+    networks:
+      - web
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+  # TODO: Uncomment the schedule service when I implement the scheduled tasks
+  #  schedule:
+  #    build:
+  #      context: ./docker/php
+  #    container_name: store-schedule
+  #    restart: unless-stopped
+  #    volumes:
+  #      - .:/var/www/app:delegated
+  #      - storage-data:/var/www/app/storage
+  #    command: php artisan schedule:work
+  #    networks:
+  #      - web
+  #    depends_on:
+  #      postgres:
+  #        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: store-postgres
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-store}
+      POSTGRES_USER: ${DB_USERNAME:-store}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - web
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-store}' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: store-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - web
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', 'ping' ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres-data:
+  storage-data:
+  redis-data:
+
+networks:
+  web:
+    external: true

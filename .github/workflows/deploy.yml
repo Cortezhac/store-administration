@@ -1,0 +1,109 @@
+name: Deploy to Hetzner VPS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            PROJECT_DIR="/opt/docker/apps/${{ github.event.repository.name }}"
+
+            # 1. Clone or pull the repository
+            if [ ! -d "$PROJECT_DIR" ]; then
+              mkdir -p "$PROJECT_DIR"
+              git clone https://github.com/${{ github.repository }}.git "$PROJECT_DIR"
+            fi
+
+            cd "$PROJECT_DIR"
+            git reset --hard HEAD
+            git pull origin main
+
+            # 2. Ensure the external network exists
+            docker network create web || true
+
+            # 3. First deployment: create .env from template
+            if [ ! -f .env ]; then
+              cp .env.example .env
+
+              # Override values for production
+              sed -i 's|^APP_ENV=.*|APP_ENV=production|' .env
+              sed -i 's|^APP_DEBUG=.*|APP_DEBUG=false|' .env
+              sed -i 's|^APP_URL=.*|APP_URL=https://lion.cortez-dev.com|' .env
+              sed -i 's|^DB_CONNECTION=.*|DB_CONNECTION=pgsql|' .env
+              sed -i 's|^QUEUE_CONNECTION=.*|QUEUE_CONNECTION=redis|' .env
+              sed -i 's|^CACHE_STORE=.*|CACHE_STORE=redis|' .env
+              sed -i 's|^SESSION_DRIVER=.*|SESSION_DRIVER=redis|' .env
+              sed -i 's|^REDIS_HOST=.*|REDIS_HOST=redis|' .env
+
+              # Append production DB settings (not in .env.example)
+              echo "DB_HOST=postgres" >> .env
+              echo "DB_PORT=5432" >> .env
+              echo "DB_DATABASE=store" >> .env
+              echo "DB_USERNAME=store" >> .env
+              echo "DB_PASSWORD=${{ secrets.DB_PGSQL_PASSWORD }}" >> .env
+            fi
+
+            # 4. Build and start containers
+            docker compose up -d --build
+
+            # 5. Generate APP_KEY if missing
+            docker compose run --rm php-fpm php artisan key:generate --force
+
+            # 6. Storage link
+            docker compose run --rm php-fpm php artisan storage:link --relative
+
+            # 7. Optimize for production
+            docker compose run --rm php-fpm php artisan config:cache
+            docker compose run --rm php-fpm php artisan route:cache
+            docker compose run --rm php-fpm php artisan view:cache
+
+            # 8. Run migrations
+            docker compose run --rm php-fpm php artisan migrate --force
+
+            # 9. Create nginx server block if first time
+            NGINX_CONF_DIR="/opt/docker/nginx/conf.d"
+            NGINX_CONF="$NGINX_CONF_DIR/lion.cortez-dev.com.conf"
+
+            if [ ! -f "$NGINX_CONF" ]; then
+              sudo tee "$NGINX_CONF" > /dev/null << 'NGINX_BLOCK'
+server {
+    listen 443 ssl http2;
+    server_name lion.cortez-dev.com;
+
+    ssl_certificate /etc/nginx/ssl/cert.pem;
+    ssl_certificate_key /etc/nginx/ssl/key.pem;
+
+    root /var/www/apps/store-administratio-v2/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass store-php-fpm:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known) {
+        deny all;
+    }
+}
+NGINX_BLOCK
+
+              # Reload nginx to apply the new config
+              docker exec nginx-proxy nginx -s reload
+            fi
