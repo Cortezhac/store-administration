@@ -8,5 +8,10 @@ mkdir -p /var/www/app/storage/framework/views \
          /var/www/app/storage/framework/sessions \
          /var/www/app/storage/logs
 
+# Default to php-fpm if no command is passed (safety net)
+if [ $# -eq 0 ]; then
+    set -- php-fpm
+fi
+
 # Run the original PHP entrypoint
 exec docker-php-entrypoint "$@"
