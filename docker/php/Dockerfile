@@ -22,5 +22,6 @@ COPY docker-entrypoint.sh /usr/local/bin/custom-entrypoint
 RUN chmod +x /usr/local/bin/custom-entrypoint
 
 ENTRYPOINT ["custom-entrypoint"]
+CMD ["php-fpm"]
 
 WORKDIR /var/www/app
