@@ -65,7 +65,7 @@ jobs:
             docker compose run --rm php-fpm php artisan key:generate --force
 
             # 7. Storage link
-            docker compose run --rm php-fpm php artisan storage:link --relative
+            docker compose run --rm php-fpm php artisan storage:link
 
             # 8. Optimize for production
             docker compose run --rm php-fpm php artisan config:cache
