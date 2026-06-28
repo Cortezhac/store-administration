@@ -72,38 +72,9 @@ jobs:
             # 8. Run migrations
             docker compose run --rm php-fpm php artisan migrate --force
 
-            # 9. Create nginx server block if first time
+            # 9. Copy nginx server block (from repo to nginx conf.d)
             NGINX_CONF_DIR="/opt/docker/nginx/conf.d"
             NGINX_CONF="$NGINX_CONF_DIR/lion.cortez-dev.com.conf"
 
-            if [ ! -f "$NGINX_CONF" ]; then
-              sudo tee "$NGINX_CONF" > /dev/null << 'NGINX_BLOCK'
-server {
-    listen 443 ssl http2;
-    server_name lion.cortez-dev.com;
-
-    ssl_certificate /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key /etc/nginx/ssl/key.pem;
-
-    root /var/www/apps/store-administratio-v2/public;
-    index index.php;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass store-php-fpm:9000;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-
-    location ~ /\.(?!well-known) {
-        deny all;
-    }
-}
-NGINX_BLOCK
-
-              # Reload nginx to apply the new config
-              docker exec nginx-proxy nginx -s reload
-            fi
+            sudo cp "$PROJECT_DIR/docker/nginx/lion.cortez-dev.com.conf" "$NGINX_CONF"
+            docker exec nginx-proxy nginx -s reload
