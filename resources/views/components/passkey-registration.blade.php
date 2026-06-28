@@ -44,13 +44,13 @@
     }"
 >
     <template x-if="!supported">
-        <p class="text-on-surface-variant">{{ __('Passkeys are not supported in this browser.') }}</p>
+        <p class="text-on-surface-variant">{{ __('profile.not_supported_passkey') }}</p>
     </template>
 
     <template x-if="supported && !showForm">
         <div>
             <x-mary-button
-                label="{{ __('Add passkey') }}"
+                label="{{ __('profile.add_passkey') }}"
                 icon="o-plus"
                 class="btn-primary"
                 x-on:click="showForm = true"
@@ -61,18 +61,18 @@
     <template x-if="supported && showForm">
         <div class="space-y-4 rounded-lg border border-outline-variant bg-surface-container-low p-4">
             <label class="block">
-                <span class="block text-sm font-medium mb-1 text-on-surface">{{ __('Passkey name') }}</span>
+                <span class="block text-sm font-medium mb-1 text-on-surface">{{ __('profile.passkey_name') }}</span>
                 <input
                     type="text"
                     x-model="name"
-                    placeholder="{{ __('e.g., MacBook Pro, iPhone') }}"
+                    placeholder="{{ __('profile.passkey_example') }}"
                     x-on:keydown.enter.prevent="register()"
                     x-ref="passkeyNameInput"
                     x-init="$nextTick(() => $refs.passkeyNameInput?.focus())"
                     class="input input-bordered w-full"
                 />
             </label>
-            <p class="text-on-surface-variant !mt-1">{{ __('Give this passkey a name to help you identify it later.') }}</p>
+            <p class="text-on-surface-variant !mt-1">{{ __('profile.passkey_name_help') }}</p>
 
             <p x-show="error" x-text="error" x-cloak class="text-sm text-red-600 dark:text-red-400"></p>
 
@@ -82,14 +82,14 @@
                     x-on:click="register()"
                     x-bind:disabled="loading || !name.trim()"
                 >
-                    <span x-show="!loading">{{ __('Register passkey') }}</span>
-                    <span x-show="loading" x-cloak>{{ __('Registering...') }}</span>
+                    <span x-show="!loading">{{ __('profile.register_passkey') }}</span>
+                    <span x-show="loading" x-cloak>{{ __('profile.registering') }}</span>
                 </x-mary-button>
                 <x-mary-button
                     class="btn-ghost"
                     x-on:click="cancel()"
                 >
-                    {{ __('Cancel') }}
+                    {{ __('profile.cancel') }}
                 </x-mary-button>
             </div>
         </div>

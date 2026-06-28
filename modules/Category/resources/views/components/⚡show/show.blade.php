@@ -3,10 +3,10 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
             <x-shared::breadcrumb :items="[
-                ['label' => __('Categorías'), 'route' => route('category.index')],
+                ['label' => __('category.categories'), 'route' => route('category.index')],
                 ['label' => $category->name],
             ]" />
-            <h2 class="text-3xl font-semibold text-on-surface tracking-tight">{{ __('Detalle de Categoría') }}</h2>
+            <h2 class="text-3xl font-semibold text-on-surface tracking-tight">{{ __('category.category_detail') }}</h2>
         </div>
         <div class="flex items-center gap-3">
             <a
@@ -15,7 +15,7 @@
                 class="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-outline text-on-surface text-sm font-medium hover:bg-surface-container-high transition-all active:scale-[0.98]"
             >
                 <flux:icon.arrow-left class="size-5" />
-                {{ __('Volver a la lista') }}
+                {{ __('shared.back_to_list') }}
             </a>
             <a
                 href="{{ route('category.edit', $category) }}"
@@ -23,7 +23,7 @@
                 class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-on-primary text-sm font-medium hover:opacity-90 shadow-sm transition-all active:scale-[0.98]"
             >
                 <flux:icon.pencil class="size-5" />
-                {{ __('Editar Categoría') }}
+                {{ __('category.edit_category') }}
             </a>
         </div>
     </div>
@@ -61,21 +61,21 @@
                         @endif
                     </div>
                     <div>
-                        <h3 class="text-xl font-semibold text-on-surface">{{ __('Información Principal') }}</h3>
-                        <p class="text-on-surface-variant text-sm">{{ __('Atributos descriptivos de la categoría') }}</p>
+                        <h3 class="text-xl font-semibold text-on-surface">{{ __('category.main_info') }}</h3>
+                        <p class="text-on-surface-variant text-sm">{{ __('category.category_attributes') }}</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                     {{-- Name --}}
                     <div class="space-y-2">
-                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Nombre') }}</label>
+                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('category.name') }}</label>
                         <p class="text-lg font-medium text-on-surface">{{ $category->name }}</p>
                     </div>
 
                     {{-- Slug --}}
                     <div class="space-y-2">
-                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Slug') }}</label>
+                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('category.slug') }}</label>
                         <div class="flex items-center gap-2">
                             <code class="bg-surface-container-high px-3 py-1 rounded-lg text-on-surface font-mono text-sm">{{ $category->slug }}</code>
                             <button
@@ -92,19 +92,19 @@
 
                     {{-- Description --}}
                     <div class="md:col-span-2 space-y-2">
-                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Descripción') }}</label>
+                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('category.description') }}</label>
                         <div class="bg-surface-container-low/50 p-4 sm:p-6 rounded-xl border border-dashed border-outline-variant">
                             @if ($category->description)
                                 <p class="text-base text-on-surface-variant leading-relaxed italic">"{{ $category->description }}"</p>
                             @else
-                                <p class="text-base text-on-surface-variant italic">{{ __('Sin descripción') }}</p>
+                                <p class="text-base text-on-surface-variant italic">{{ __('category.no_description') }}</p>
                             @endif
                         </div>
                     </div>
 
                     {{-- Parent Category --}}
                     <div class="space-y-2">
-                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('Categoría Padre') }}</label>
+                        <label class="text-xs font-semibold text-primary uppercase tracking-wider">{{ __('category.parent_category') }}</label>
                         <div class="flex items-center gap-2 text-on-surface">
                             <flux:icon.folder-open class="size-5 text-secondary" />
                             @if ($category->parent)
@@ -112,8 +112,8 @@
                                     {{ $category->parent->name }}
                                 </a>
                             @else
-                                <span class="font-medium">{{ __('Raíz') }}</span>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-secondary-fixed text-secondary border border-secondary/20">{{ __('Root') }}</span>
+                                <span class="font-medium">{{ __('category.root') }}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-secondary-fixed text-secondary border border-secondary/20">{{ __('category.root') }}</span>
                             @endif
                         </div>
                     </div>
@@ -127,12 +127,12 @@
             <section class="bg-surface-container-high/50 rounded-xl p-4 sm:p-6 border border-outline-variant">
                 <h3 class="text-sm font-medium text-on-surface mb-4 sm:mb-6 flex items-center gap-2">
                     <flux:icon.information-circle class="size-5" />
-                    {{ __('Información del Sistema') }}
+                    {{ __('category.system_info') }}
                 </h3>
                 <div class="space-y-4 sm:space-y-6">
                     {{-- ID --}}
                     <div class="flex flex-col gap-1">
-                        <span class="text-xs font-medium text-on-surface-variant">{{ __('ID de Registro') }}</span>
+                        <span class="text-xs font-medium text-on-surface-variant">{{ __('category.record_id') }}</span>
                         <div class="flex items-center justify-between bg-surface-container-lowest px-4 py-3 rounded-lg border border-outline-variant/50">
                             <span class="font-mono text-primary font-bold">CAT-{{ str_pad($category->id, 5, '0', STR_PAD_LEFT) }}</span>
                             <flux:icon.lock-closed class="size-[18px] text-outline" />
@@ -141,7 +141,7 @@
 
                     {{-- Created At --}}
                     <div class="flex flex-col gap-1">
-                        <span class="text-xs font-medium text-on-surface-variant">{{ __('Fecha de Creación') }}</span>
+                        <span class="text-xs font-medium text-on-surface-variant">{{ __('category.created_at') }}</span>
                         <div class="flex items-center gap-3 bg-surface-container-lowest/40 p-3 rounded-lg">
                             <flux:icon.calendar class="size-5 text-secondary" />
                             <span class="text-sm text-on-surface">{{ $category->created_at->format('Y-m-d H:i:s') }}</span>
@@ -150,7 +150,7 @@
 
                     {{-- Updated At --}}
                     <div class="flex flex-col gap-1">
-                        <span class="text-xs font-medium text-on-surface-variant">{{ __('Fecha de Actualización') }}</span>
+                        <span class="text-xs font-medium text-on-surface-variant">{{ __('category.updated_at') }}</span>
                         <div class="flex items-center gap-3 bg-surface-container-lowest/40 p-3 rounded-lg">
                             <flux:icon.clock class="size-5 text-primary" />
                             <span class="text-sm text-on-surface">{{ $category->updated_at->format('Y-m-d H:i:s') }}</span>
@@ -163,11 +163,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-primary-container text-primary text-center p-4 rounded-xl flex flex-col items-center justify-center">
                     <span class="text-2xl font-semibold">{{ $category->children_count }}</span>
-                    <span class="text-xs font-medium opacity-80">{{ __('Subcategorías') }}</span>
+                    <span class="text-xs font-medium opacity-80">{{ __('category.subcategories') }}</span>
                 </div>
                 <div class="bg-surface-container-high text-on-surface p-4 rounded-xl flex flex-col items-center justify-center border border-outline-variant">
                     <span class="text-2xl font-semibold">—</span>
-                    <span class="text-xs font-medium text-on-surface-variant">{{ __('Productos') }}</span>
+                    <span class="text-xs font-medium text-on-surface-variant">{{ __('category.products') }}</span>
                 </div>
             </div>
 
@@ -185,10 +185,10 @@
                 </div>
                 <div>
                     <p class="text-sm font-bold text-on-surface">
-                        {{ $category->is_active ? __('Categoría Activa') : __('Categoría Inactiva') }}
+                        {{ $category->is_active ? __('category.category_active') : __('category.category_inactive') }}
                     </p>
                     <p class="text-xs text-on-surface-variant">
-                        {{ $category->is_active ? __('Visible en el Frontend') : __('Oculta en el Frontend') }}
+                        {{ $category->is_active ? __('category.visible_in_frontend') : __('category.hidden_in_frontend') }}
                     </p>
                 </div>
             </div>

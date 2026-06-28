@@ -17,6 +17,9 @@ use Livewire\Livewire;
  */
 class ModularLivewireServiceProvider extends ServiceProvider
 {
+    // Module list: the directory name in the modules directory
+    // Example: modules/{$module}/resources/views/components
+    // This is the list of modules that will be registered
     protected array $modules = [
         'Category',
     ];

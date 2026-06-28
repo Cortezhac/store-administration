@@ -42,7 +42,7 @@
         <div class="bg-surface-container-low px-6 py-4 flex items-center justify-between border-t border-outline-variant">
             <div class="flex items-center gap-4">
                 <div class="text-xs text-on-surface-variant font-medium">
-                    {{ __('Mostrando :from-:to de :total', [
+                    {{ __('shared.showing_from_to', [
                         'from' => $paginator->firstItem(),
                         'to' => $paginator->lastItem(),
                         'total' => $paginator->total(),
@@ -60,7 +60,7 @@
                     wire:click="previousPage"
                     @if ($paginator->onFirstPage()) disabled @endif
                     class="p-2 rounded-lg hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    aria-label="{{ __('Anterior') }}"
+                    aria-label="{{ __('shared.previous') }}"
                 >
                     <flux:icon.chevron-left class="size-4" />
                 </button>
@@ -84,7 +84,7 @@
                     wire:click="nextPage"
                     @if (!$paginator->hasMorePages()) disabled @endif
                     class="p-2 rounded-lg hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    aria-label="{{ __('Siguiente') }}"
+                    aria-label="{{ __('shared.next') }}"
                 >
                     <flux:icon.chevron-right class="size-4" />
                 </button>

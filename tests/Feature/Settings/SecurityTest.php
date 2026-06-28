@@ -21,6 +21,8 @@ beforeEach(function () {
 test('security settings page can be rendered', function () {
     $user = User::factory()->create();
 
+    app()->setLocale('en');
+
     $response = $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->get(route('security.edit'));
@@ -46,6 +48,8 @@ test('security settings page renders without two factor when feature is disabled
     config(['fortify.features' => []]);
 
     $user = User::factory()->create();
+
+    app()->setLocale('en');
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
