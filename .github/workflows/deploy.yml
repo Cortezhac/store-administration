@@ -33,56 +33,5 @@ jobs:
             # 2. Ensure the external network exists
             docker network create web || true
 
-            # 3. First deployment: create .env from template
-            if [ ! -f .env ]; then
-              cp .env.example .env
-
-              # Override values for production
-              sed -i 's|^APP_ENV=.*|APP_ENV=production|' .env
-              sed -i 's|^APP_DEBUG=.*|APP_DEBUG=false|' .env
-              sed -i 's|^APP_URL=.*|APP_URL=https://lion.cortez-dev.com|' .env
-              sed -i 's|^DB_CONNECTION=.*|DB_CONNECTION=pgsql|' .env
-              sed -i 's|^QUEUE_CONNECTION=.*|QUEUE_CONNECTION=redis|' .env
-              sed -i 's|^CACHE_STORE=.*|CACHE_STORE=redis|' .env
-              sed -i 's|^SESSION_DRIVER=.*|SESSION_DRIVER=redis|' .env
-              sed -i 's|^REDIS_HOST=.*|REDIS_HOST=redis|' .env
-
-              # Append production DB settings (not in .env.example)
-              echo "DB_HOST=postgres" >> .env
-              echo "DB_PORT=5432" >> .env
-              echo "DB_DATABASE=store" >> .env
-              echo "DB_USERNAME=store" >> .env
-              echo "DB_PASSWORD=${{ secrets.DB_PGSQL_PASSWORD }}" >> .env
-            fi
-
-            # 4. Build and start containers
+            # 3. Rebuild and restart containers
             docker compose up -d --build
-
-            # 5. Install composer dependencies (vendor/ is gitignored)
-            # Retry up to 3 times on transient network errors (GitHub CDN 400s)
-            for i in 1 2 3; do
-              docker compose run --rm php-fpm composer install --no-dev --optimize-autoloader && break
-              echo "Composer install failed (attempt $i/3). Retrying in 5s..."
-              sleep 5
-            done
-
-            # 6. Generate APP_KEY if missing
-            docker compose run --rm php-fpm php artisan key:generate --force
-
-            # 7. Storage link
-            docker compose run --rm php-fpm php artisan storage:link
-
-            # 8. Optimize for production
-            docker compose run --rm php-fpm php artisan config:cache
-            docker compose run --rm php-fpm php artisan route:cache
-            docker compose run --rm php-fpm php artisan view:cache
-
-            # 9. Run migrations
-            docker compose run --rm php-fpm php artisan migrate --force
-
-            # 10. Copy nginx server block (from repo to nginx conf.d)
-            NGINX_CONF_DIR="/opt/docker/nginx/conf.d"
-            NGINX_CONF="$NGINX_CONF_DIR/lion.cortez-dev.com.conf"
-
-            sudo cp "$PROJECT_DIR/docker/nginx/lion.cortez-dev.com.conf" "$NGINX_CONF"
-            docker exec nginx-proxy nginx -s reload || echo "Nginx reload will retry automatically on next request (Docker DNS runtime resolution)"
