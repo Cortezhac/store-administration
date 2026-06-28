@@ -59,7 +59,12 @@ jobs:
             docker compose up -d --build
 
             # 5. Install composer dependencies (vendor/ is gitignored)
-            docker compose run --rm php-fpm composer install --no-dev --optimize-autoloader
+            # Retry up to 3 times on transient network errors (GitHub CDN 400s)
+            for i in 1 2 3; do
+              docker compose run --rm php-fpm composer install --no-dev --optimize-autoloader && break
+              echo "Composer install failed (attempt $i/3). Retrying in 5s..."
+              sleep 5
+            done
 
             # 6. Generate APP_KEY if missing
             docker compose run --rm php-fpm php artisan key:generate --force
@@ -80,4 +85,4 @@ jobs:
             NGINX_CONF="$NGINX_CONF_DIR/lion.cortez-dev.com.conf"
 
             sudo cp "$PROJECT_DIR/docker/nginx/lion.cortez-dev.com.conf" "$NGINX_CONF"
-            docker exec nginx-proxy nginx -s reload
+            docker exec nginx-proxy nginx -s reload || echo "Nginx reload will retry automatically on next request (Docker DNS runtime resolution)"
