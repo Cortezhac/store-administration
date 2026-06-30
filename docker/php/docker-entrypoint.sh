@@ -1,17 +1,23 @@
 #!/bin/sh
 set -e
 
-# Create required storage directories in case they don't exist
-# (named volume 'storage-data' starts empty on first run)
-mkdir -p /var/www/app/storage/framework/views \
-         /var/www/app/storage/framework/cache \
-         /var/www/app/storage/framework/sessions \
-         /var/www/app/storage/logs
+# Asegurar de forma dinámica que existan los subdirectorios de Laravel
+for dir in views cache sessions; do
+    mkdir -p "/var/www/app/storage/framework/$dir"
+done
+mkdir -p /var/www/app/storage/logs
 
-# Default to php-fpm if no command is passed (safety net)
+# Comprobar si el comando que viene es php-fpm para ejecutar tareas iniciales de Laravel si es necesario
+if [ "$1" = 'php-fpm' ]; then
+    # Por ejemplo, si deseas limpiar caché vieja al encender el contenedor web:
+    # php artisan cache:clear
+    echo "Estructura de almacenamiento validada con éxito."
+fi
+
+# Si no se pasó ningún comando (un fallback seguro)
 if [ $# -eq 0 ]; then
     set -- php-fpm
 fi
 
-# Run the original PHP entrypoint
+# Pasar el control al entrypoint oficial de la imagen de PHP
 exec docker-php-entrypoint "$@"
