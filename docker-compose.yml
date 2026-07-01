@@ -3,7 +3,6 @@ services:
     build:
       context: ./docker/php
     container_name: store-php-fpm
-    user: "33:33"
     restart: unless-stopped
     volumes:
       - .:/var/www/app:delegated
