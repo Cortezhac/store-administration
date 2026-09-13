@@ -101,12 +101,6 @@
                         <x-mary-button type="submit" :label="__('login.submit')" icon="o-arrow-right"
                             class="btn-primary w-full rounded-xl" />
                     </form>
-
-                    {{-- Register Link --}}
-                    <p class="mt-8 text-center text-[16px] leading-6 text-on-surface-variant">
-                        {{ __('login.no_account') }}
-                        <a href="{{ route('register') }}" class="text-primary font-bold hover:underline ml-1">{{ __('login.create_account') }}</a>
-                    </p>
                 </div>
             </div>
 
