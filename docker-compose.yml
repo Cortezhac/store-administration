@@ -1,35 +1,26 @@
 services:
     web:
-        build:
-            context: ./docker/php
-        restart: unless-stopped
         container_name: store-web
+        restart: unless-stopped
         environment:
             - DB_HOST=db
             - DB_PORT=5432
             - DB_DATABASE=${DB_DATABASE:-store}
             - DB_USERNAME=${DB_USERNAME:-store}
             - DB_PASSWORD=${DB_PASSWORD}
-        ports:
-            - 8000:8000
-            - 5173:5173
-        volumes:
-            - .:/var/www/app
-            - /var/www/app/node_modules
         depends_on:
             - db
 
     db:
-        container_name: store-db
         image: postgres:17-alpine
-        volumes:
-            - postgres-data:/var/lib/postgresql/data
+        container_name: store-db
+        restart: unless-stopped
         environment:
             POSTGRES_DB: ${DB_DATABASE:-store}
             POSTGRES_USER: ${DB_USERNAME:-store}
             POSTGRES_PASSWORD: ${DB_PASSWORD}
-        ports:
-            - ${FORWARD_DB_PORT:-5432}:5432
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
 
 volumes:
     postgres-data:

@@ -1,0 +1,53 @@
+# Contruir los assets de node
+FROM node:20-alpine AS assets
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml* ./
+# Instalamos pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm build
+
+# Construir dependencias de php
+FROM composer:2 AS vendor
+
+WORKDIR /app
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts
+
+# Construir la capa final
+FROM php:8.4-fpm-alpine
+
+RUN apk add --no-cache \
+    postgresql-dev \
+    libpng-dev \
+    libzip-dev \
+    zip \
+    fcgi
+
+RUN docker-php-ext-install pdo pdo_pgsql opcache zip bcmath gd
+
+COPY docker/php/php.ini /usr/local/etc/php/php.ini
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+WORKDIR /var/www/app
+
+COPY . .
+
+# Copiamos la capa de vendor y assets
+COPY --from=vendor /app/vendor /var/www/app/vendor
+COPY --from=assets /app/public /var/www/app/public
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
