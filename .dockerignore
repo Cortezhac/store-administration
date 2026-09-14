@@ -6,7 +6,6 @@
 .vscode
 .agents
 .claude
-docker/
 node_modules/
 vendor/
 storage/

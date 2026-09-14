@@ -1,15 +1,3 @@
-# Contruir los assets de node
-FROM node:20-alpine AS assets
-
-WORKDIR /app
-COPY package.json pnpm-lock.yaml* ./
-# Instalamos pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN pnpm install --frozen-lockfile
-
-COPY . .
-RUN pnpm build
-
 # Construir dependencias de php
 FROM composer:2 AS vendor
 
@@ -23,7 +11,9 @@ RUN composer install \
     --optimize-autoloader \
     --no-scripts
 
-# Construir la capa final
+# Construir la capa final: PHP-FPM
+# Nota: sin assets en la imagen — los estáticos los sirve store-nginx desde el bind
+# del código, compilados en el server durante el deploy (paso con node).
 FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \
@@ -31,9 +21,9 @@ RUN apk add --no-cache \
     libpng-dev \
     libzip-dev \
     zip \
-    fcgi
+    unzip
 
-RUN docker-php-ext-install pdo pdo_pgsql opcache zip bcmath gd
+RUN docker-php-ext-install pdo pdo_pgsql zip bcmath gd
 
 COPY docker/php/php.ini /usr/local/etc/php/php.ini
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
@@ -42,12 +32,17 @@ WORKDIR /var/www/app
 
 COPY . .
 
-# Copiamos la capa de vendor y assets
+# Copiamos la capa de vendor
 COPY --from=vendor /app/vendor /var/www/app/vendor
-COPY --from=assets /app/public /var/www/app/public
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Permisos base (storage persiste en el volumen store-storage)
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Entrypoint: valida estructura de storage, libera permisos del volumen y arranca fpm
+COPY docker/php/docker-entrypoint.prod.sh /usr/local/bin/docker-entrypoint.prod.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.prod.sh
 
 EXPOSE 9000
 
+ENTRYPOINT ["docker-entrypoint.prod.sh"]
 CMD ["php-fpm"]

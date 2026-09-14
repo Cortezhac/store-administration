@@ -9,7 +9,14 @@ services:
     volumes:
       - .:/var/www/app
       - /var/www/app/node_modules
+    networks:
+      - default # Necesaria para que siga hablando con store-db (postgres)
+      - web     # Red externa del nginx-proxy central, para que resuelva 'store-web' por DNS
 
   db:
     ports:
       - "5433:5432" # Expone la BD a tu DBeaver local
+
+networks:
+  web:
+    external: true
