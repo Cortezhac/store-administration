@@ -27,22 +27,31 @@ jobs:
             fi
 
             cd "$PROJECT_DIR"
-            git reset --hard HEAD
             git pull origin main
 
             # 2. Ensure the external network exists
             docker network create web || true
 
-            # 3. Levantar contenedores especificando el archivo de PRODUCCIÓN
+            # 3. Compilar assets (container node temporal — el host no necesita node).
+            #    store-nginx sirve los estáticos desde el bind del código (public/build)
+            docker run --rm -v "$PROJECT_DIR":/app -w /app node:20-alpine sh -c \
+            "corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && pnpm build"
+
+            # 4. Levantar contenedores especificando el archivo de PRODUCCIÓN
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
-            # 4. Ejecutar migraciones de la base de datos (forzadas para producción)
+            # 5. Apuntar el vhost del nginx-proxy central a store-nginx (idempotente)
+            sed -i 's|http://store-web:8000|http://store-nginx:80|' /opt/docker/nginx/conf.d/lion.cortez-dev.conf
+            docker exec nginx-proxy nginx -t
+            docker exec nginx-proxy nginx -s reload
+
+            # 6. Ejecutar migraciones de la base de datos (forzadas para producción)
             docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan migrate --force
 
-            # 5. Optimizar Laravel para producción
+            # 7. Optimizar Laravel para producción
             docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan config:cache
             docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan route:cache
             docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan view:cache
 
-            # 6. Limpieza de imágenes antiguas para no saturar el disco del VPS
+            # 8. Limpieza de imágenes antiguas para no saturar el disco del VPS
             docker image prune -f
