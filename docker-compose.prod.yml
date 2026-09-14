@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile.prod
+      network:
+        - web
   nginx:
     image: nginx:alpine
     container_name: store-nginx
@@ -19,3 +21,7 @@ services:
   db:
     # En producción NO exponemos el puerto 5433 al exterior por seguridad
     restart: always
+
+networks:
+  web:
+    external: true
