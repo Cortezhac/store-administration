@@ -35,8 +35,14 @@ COPY . .
 # Copiamos la capa de vendor
 COPY --from=vendor /app/vendor /var/www/app/vendor
 
-# Permisos base (storage persiste en el volumen store-storage)
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Permisos base (storage persiste en el volumen store-storage).
+# storage/ y bootstrap/cache/ están excluidos del .dockerignore → crearlos aquí.
+RUN mkdir -p storage/framework/sessions \
+        storage/framework/views \
+        storage/framework/cache \
+        storage/logs \
+        bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
 # Entrypoint: valida estructura de storage, libera permisos del volumen y arranca fpm
 COPY docker/php/docker-entrypoint.prod.sh /usr/local/bin/docker-entrypoint.prod.sh
