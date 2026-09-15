@@ -41,7 +41,7 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
             # 5. Apuntar el vhost del nginx-proxy central a store-nginx (idempotente)
-            sed -i 's|http://store-web:8000|http://store-nginx:80|' /opt/docker/nginx/conf.d/lion.cortez-dev.conf
+            sed -i 's|http://store-web:8000|http://store-nginx:80|' /opt/docker/nginx-proxy/conf.d/lion.cortez-dev.conf
             docker exec nginx-proxy nginx -t
             docker exec nginx-proxy nginx -s reload
 
