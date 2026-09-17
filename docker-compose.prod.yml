@@ -8,18 +8,20 @@ services:
     volumes:
       - ./.env:/var/www/app/.env:ro # APP_KEY, APP_ENV, DB_* (no van en la imagen por .dockerignore)
       - store-storage:/var/www/app/storage # Persistencia de uploads, logs y cache de Laravel
+      - store-build:/var/www/app/public/build # Assets compilados en la imagen, sincronizados por el entrypoint
 
   nginx:
     image: nginx:alpine
     container_name: store-nginx
     restart: unless-stopped
     depends_on:
-      - web
+      - web # Garantiza que web arranque primero y sincronice los assets al volumen
     networks:
       - default # Para resolver 'web' (php-fpm) por DNS y servir los estáticos
       - web     # Para que el nginx-proxy central lo resuelva como 'store-nginx'
     volumes:
-      - ./:/var/www/app:ro # Código + assets compilados (servir estáticos)
+      - ./:/var/www/app:ro # Código + resto de estáticos (public/), salvo build que viene del volumen
+      - store-build:/var/www/app/public/build:ro # Assets compilados, producidos por Dockerfile.prod
       - ./docker/nginx/lion.cortez-dev.com.conf:/etc/nginx/conf.d/lion.cortez-dev.com.conf:ro
 
   db:
@@ -28,6 +30,7 @@ services:
 
 volumes:
   store-storage:
+  store-build:
 
 networks:
   web:
