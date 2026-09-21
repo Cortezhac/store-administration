@@ -1,0 +1,8 @@
+npx lint-staged
+
+# Run tests only when PHP files are staged
+changed_php=$(git diff --cached --name-only --diff-filter=ACM | grep -c '\.php$' || true)
+if [ "$changed_php" -gt 0 ]; then
+  echo "🔍 Running Pest tests..."
+  ./vendor/bin/pest
+fi
