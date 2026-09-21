@@ -27,6 +27,12 @@ RUN pnpm install --frozen-lockfile
 
 # Código fuente + recursos → compilación
 COPY . .
+
+# Los componentes PHP de maryUI contienen clases Tailwind que @source necesita
+# escanear. vendor/ está en .dockerignore así que lo copiamos desde la etapa
+# de composer para que Tailwind genere los estilos de los componentes UI.
+COPY --from=vendor /app/vendor/robsontenorio/mary/src /app/vendor/robsontenorio/mary/src
+
 RUN pnpm build
 
 # ==== Etapa final: PHP-FPM ====
