@@ -18,6 +18,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            # Runtime del server: Podman rootful (Docker ya no se usa).
+            export DOCKER_HOST="unix:///run/podman/podman.sock"
             PROJECT_DIR="/opt/docker/apps/${{ github.event.repository.name }}"
 
             # 1. Clone or pull the repository
@@ -30,21 +32,35 @@ jobs:
             git pull origin main
 
             # 2. Ensure the external network exists
-            docker network create web || true
+            podman network create web || true
 
-            # 3. Levantar contenedores de PRODUCCIÓN.
+            # 3. Levantar contenedores de PRODUCCIÓN (Podman).
+            #    Importante: el service nginx (store-nginx) vive SOLO en
+            #    docker-compose.prod.yml; por eso SIEMPRE los tres archivos.
+            #    Con solo yml+prod el proxy central crashea en bucle con
+            #    "[emerg] host not found in upstream" porque store-nginx no existe.
             #    Los assets (vite/tailwind/daisyui) se compilan DENTRO de
             #    Dockerfile.prod (etapa node) y store-nginx los sirve desde el
             #    volumen compartido store-build. El host no necesita node.
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml up -d --build
 
             # 4. Ejecutar migraciones de la base de datos (forzadas para producción)
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan migrate --force
+            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan migrate --force
 
             # 5. Optimizar Laravel para producción
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan config:cache
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan route:cache
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T web php artisan view:cache
+            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan config:cache
+            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan route:cache
+            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan view:cache
 
-            # 6. Limpieza de imágenes antiguas para no saturar el disco del VPS
-            docker image prune -f
+            # 6. Reiniciar el proxy central SIEMPRE AL FINAL.
+            #    nginx resuelve los upstreams (store-nginx, landing-page) solo al
+            #    arrancar; si una recreación cambió la IP del contenedor en la red
+            #    "web", sin este restart el sitio queda apuntando a una IP muerta.
+            podman restart nginx-proxy
+
+            # 7. Smoke test: la cadena completa (proxy → store-nginx → web → db)
+            curl -sSf --resolve lion.cortez-dev.com:443:127.0.0.1 https://lion.cortez-dev.com/ >/dev/null \
+              || { echo "SMOKE TEST FALLÓ"; podman logs --tail 20 nginx-proxy; exit 1; }
+
+            # 8. Limpieza de imágenes antiguas para no saturar el disco del VPS
+            podman image prune -f
