@@ -58,9 +58,27 @@ jobs:
             #    "web", sin este restart el sitio queda apuntando a una IP muerta.
             podman restart nginx-proxy
 
-            # 7. Smoke test: la cadena completa (proxy → store-nginx → web → db)
-            curl -sSf --resolve lion.cortez-dev.com:443:127.0.0.1 https://lion.cortez-dev.com/ >/dev/null \
-              || { echo "SMOKE TEST FALLÓ"; podman logs --tail 20 nginx-proxy; exit 1; }
+            # 7. Smoke test: la cadena completa (proxy → store-nginx → web → db).
+            #    Retry: `podman restart` devuelve con el contenedor arrancado, pero
+            #    nginx tarda en bindear el 443; el primer intento suele fallar.
+            #    -k: el origin va detrás de Cloudflare, así que sirve un Origin
+            #    Certificate sin cadena pública completa; la confianza TLS la
+            #    resuelve el edge, acá solo se valida la conectividad interna.
+            ok=""
+            for i in $(seq 1 10); do
+              if curl -skSf --resolve lion.cortez-dev.com:443:127.0.0.1 https://lion.cortez-dev.com/ >/dev/null 2>&1; then
+                ok=1
+                break
+              fi
+              echo "SMOKE TEST: esperando al proxy (intento $i/10)..."
+              sleep 2
+            done
+            if [ -z "$ok" ]; then
+              echo "SMOKE TEST FALLÓ"
+              podman logs --tail 20 nginx-proxy
+              exit 1
+            fi
+            echo "SMOKE TEST OK"
 
             # 8. Limpieza de imágenes antiguas para no saturar el disco del VPS
             podman image prune -f
