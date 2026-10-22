@@ -18,9 +18,38 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            # Un paso que falla ABORTA el deploy. Sin esto, un `migrate` roto
+            # seguía al `config:cache` (que sí funciona) y el deploy solo
+            # moría al final, en el smoke test, por un motivo completamente
+            # distinto. Los fallos tienen que quedar donde pasan.
+            set -e
+
             # Runtime del server: Podman rootful (Docker ya no se usa).
             export DOCKER_HOST="unix:///run/podman/podman.sock"
             PROJECT_DIR="/opt/docker/apps/${{ github.event.repository.name }}"
+
+            # En PRODUCCIÓN se usan SOLO docker-compose.yml + docker-compose.prod.yml.
+            #
+            # NUNCA agregar docker-compose.override.yml acá: ese archivo es el
+            # override de DESARROLLO. Con él en producción pasaba esto:
+            #   1) montaba `.:/var/www/app`, así que el contenedor usaba el
+            #      checkout del host en lugar del código de la imagen. El
+            #      vendor/ del host estaba viejo (sin spatie/laravel-permission)
+            #      y tapaba el vendor fresco → login muerto con
+            #      "Trait Spatie\Permission\Traits\HasRoles not found";
+            #   2) el bootstrap/cache/config.php cacheado del deploy anterior
+            #      quedaba montado y, con la config cacheada, Laravel saltea
+            #      mergeConfigFrom() → las migraciones que leen
+            #      config('permission.*') morían con
+            #      "config/permission.php not loaded";
+            #   3) publicaba la BD en 0.0.0.0:5433 y el FPM en 8000/5173.
+            #
+            # El service nginx (store-nginx) vive en docker-compose.prod.yml, así
+            # que con yml+prod el proxy central resuelve todos los upstreams.
+            # Los assets (vite/tailwind/daisyui) se compilan DENTRO de
+            # Dockerfile.prod (etapa node) y store-nginx los sirve desde el
+            # volumen compartido store-build. El host no necesita node.
+            COMPOSE="podman compose -f docker-compose.yml -f docker-compose.prod.yml"
 
             # 1. Clone or pull the repository
             if [ ! -d "$PROJECT_DIR" ]; then
@@ -34,30 +63,21 @@ jobs:
             # 2. Ensure the external network exists
             podman network create web || true
 
-            # 3. Levantar contenedores de PRODUCCIÓN (Podman).
-            #    Importante: el service nginx (store-nginx) vive SOLO en
-            #    docker-compose.prod.yml; por eso SIEMPRE los tres archivos.
-            #    Con solo yml+prod el proxy central crashea en bucle con
-            #    "[emerg] host not found in upstream" porque store-nginx no existe.
-            #    Los assets (vite/tailwind/daisyui) se compilan DENTRO de
-            #    Dockerfile.prod (etapa node) y store-nginx los sirve desde el
-            #    volumen compartido store-build. El host no necesita node.
-            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml up -d --build
+            # 3. Levantar contenedores de PRODUCCIÓN (Podman)
+            $COMPOSE up -d --build
 
-            # 4. Ejecutar migraciones de la base de datos (forzadas para producción)
-            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan migrate --force
-
-            # 4.1 GATE DE SEGURIDAD: el runtime PHP del contenedor tiene que
-            #     estar parcheado contra CVE-2026-109618 y CVE-2026-109619
-            #     ("PHP2Shell", CVSS 9.2, RCE sin autenticación).
+            # 4. GATE DE SEGURIDAD (fail fast, antes de tocar la base).
+            #    El runtime PHP del contenedor tiene que estar parcheado contra
+            #    CVE-2026-109618 y CVE-2026-109619 ("PHP2Shell", CVSS 9.2,
+            #    RCE sin autenticación).
             #
-            #     Si el Dockerfile se desactualiza o el tag de la imagen se
-            #     resuelve a una versión vieja, el deploy CORTA acá en vez de
-            #     dejar un worker vulnerable expuestos a internet.
+            #    Si el Dockerfile se desactualiza o el tag de la imagen se
+            #    resuelve a una versión vieja, el deploy CORTA acá en vez de
+            #    dejar un worker vulnerable expuesto a internet.
             #
-            #     Al subir la versión de PHP hay que actualizar este piso y el
-            #     de tests/Feature/Security/PhpRuntimeSecurityTest.php.
-            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php -r '
+            #    Al subir la versión de PHP hay que actualizar este piso y el
+            #    de tests/Feature/Security/PhpRuntimeSecurityTest.php.
+            $COMPOSE exec -T web php -r '
               $min = "8.4.27";
               if (version_compare(PHP_VERSION, $min, "<")) {
                   fwrite(STDERR, "SECURITY GATE FAILED: PHP " . PHP_VERSION . " es vulnerable a CVE-2026-109618 / CVE-2026-109619 (requiere >= " . $min . ")\n");
@@ -66,18 +86,35 @@ jobs:
               echo "SECURITY GATE OK: PHP " . PHP_VERSION . "\n";
             '
 
-            # 5. Optimizar Laravel para producción
-            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan config:cache
-            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan route:cache
-            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan view:cache
+            # 5. Migraciones de la base de datos (forzadas para producción)
+            #
+            #    config:clear ANTES de migrar: si quedó un config.php cacheado
+            #    de un deploy anterior, Laravel saltea mergeConfigFrom() y la
+            #    config de los paquetes (Spatie permission) desaparece.
+            #    config:cache (paso 7) la regenera después de migrar.
+            $COMPOSE exec -T web php artisan config:clear
+            $COMPOSE exec -T web php artisan migrate --force
 
-            # 6. Reiniciar el proxy central SIEMPRE AL FINAL.
+            # 6. Seedear los roles (admin, employee). El RoleSeeder usa
+            #    findOrCreate, así que es idempotente. Va después del migrate
+            #    porque las tablas de Spatie las crea la migración.
+            #    El DatabaseSeeder NO crea el usuario de test en producción
+            #    (está guardado por APP_ENV), así que esto es seguro acá.
+            $COMPOSE exec -T web php artisan db:seed --force
+
+            # 7. Optimizar Laravel para producción
+            $COMPOSE exec -T web php artisan config:cache
+            $COMPOSE exec -T web php artisan route:cache
+            $COMPOSE exec -T web php artisan view:cache
+
+            # 8. Reiniciar el proxy central SIEMPRE AL FINAL.
             #    nginx resuelve los upstreams (store-nginx, landing-page) solo al
             #    arrancar; si una recreación cambió la IP del contenedor en la red
-            #    "web", sin este restart el sitio queda apuntando a una IP muerta.
+            #    "web", sin este restart el sitio queda apuntando a una IP muerta
+            #    (502 en todo, aunque la app esté sana).
             podman restart nginx-proxy
 
-            # 7. Smoke test: la cadena completa (proxy → store-nginx → web → db).
+            # 9. Smoke test: la cadena completa (proxy → store-nginx → web → db).
             #    Retry: `podman restart` devuelve con el contenedor arrancado, pero
             #    nginx tarda en bindear el 443; el primer intento suele fallar.
             #    -k: el origin va detrás de Cloudflare, así que sirve un Origin
@@ -94,10 +131,20 @@ jobs:
             done
             if [ -z "$ok" ]; then
               echo "SMOKE TEST FALLÓ"
-              podman logs --tail 20 nginx-proxy
+              echo "--- estado de TODOS los contenedores ---"
+              podman ps -a --format "{{.Names}}\t{{.Status}}\t{{.Image}}"
+              echo "--- logs del proxy central (nginx-proxy) ---"
+              podman logs --tail 20 nginx-proxy || true
+              echo ""
+              echo "Diagnóstico: si el error del proxy es 'host not found in upstream',"
+              echo "NO es un fallo del store: el proxy central no puede resolver un"
+              echo "upstream porque el contenedor de otro proyecto está caído"
+              echo "(ej: landing-page). nginx resuelve TODOS los upstreams al arrancar,"
+              echo "así que si uno falta no levanta NADA, ni el store."
+              echo "Levantalo y reintentá: podman start <contenedor> && podman restart nginx-proxy"
               exit 1
             fi
             echo "SMOKE TEST OK"
 
-            # 8. Limpieza de imágenes antiguas para no saturar el disco del VPS
+            # 10. Limpieza de imágenes antiguas para no saturar el disco del VPS
             podman image prune -f
