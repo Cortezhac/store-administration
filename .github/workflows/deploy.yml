@@ -47,6 +47,25 @@ jobs:
             # 4. Ejecutar migraciones de la base de datos (forzadas para producción)
             podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan migrate --force
 
+            # 4.1 GATE DE SEGURIDAD: el runtime PHP del contenedor tiene que
+            #     estar parcheado contra CVE-2026-109618 y CVE-2026-109619
+            #     ("PHP2Shell", CVSS 9.2, RCE sin autenticación).
+            #
+            #     Si el Dockerfile se desactualiza o el tag de la imagen se
+            #     resuelve a una versión vieja, el deploy CORTA acá en vez de
+            #     dejar un worker vulnerable expuestos a internet.
+            #
+            #     Al subir la versión de PHP hay que actualizar este piso y el
+            #     de tests/Feature/Security/PhpRuntimeSecurityTest.php.
+            podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php -r '
+              $min = "8.4.27";
+              if (version_compare(PHP_VERSION, $min, "<")) {
+                  fwrite(STDERR, "SECURITY GATE FAILED: PHP " . PHP_VERSION . " es vulnerable a CVE-2026-109618 / CVE-2026-109619 (requiere >= " . $min . ")\n");
+                  exit(1);
+              }
+              echo "SECURITY GATE OK: PHP " . PHP_VERSION . "\n";
+            '
+
             # 5. Optimizar Laravel para producción
             podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan config:cache
             podman compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.prod.yml exec -T web php artisan route:cache

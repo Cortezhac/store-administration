@@ -36,7 +36,21 @@ COPY --from=vendor /app/vendor/robsontenorio/mary/src /app/vendor/robsontenorio/
 RUN pnpm build
 
 # ==== Etapa final: PHP-FPM ====
-FROM php:8.4-fpm-alpine
+#
+# Versión FIJADA a la patch que corrige CVE-2026-109618 y CVE-2026-109619
+# ("PHP2Shell", CVSS 9.2, RCE sin autenticación). El tag flotante
+# `php:8.4-fpm-alpine` se mueve solo y no deja evidencia de qué versión
+# corría en cada build; el tag con patch explícito sí.
+#
+#   PHP 8.4 → 8.4.27   (fijo en esta imagen)
+#   PHP 8.3 → 8.3.36
+#   PHP 8.2 → 8.2.35
+#   PHP 8.5 → 8.5.12
+#
+# Al subir la versión de PHP hay que actualizar también el piso de versión
+# en tests/Feature/Security/PhpRuntimeSecurityTest.php y en el gate de
+# deploy (deploy.yml).
+FROM php:8.4.27-fpm-alpine
 
 RUN apk add --no-cache \
     postgresql-dev \
@@ -49,6 +63,12 @@ RUN docker-php-ext-install pdo pdo_pgsql zip bcmath gd
 
 COPY docker/php/php.ini /usr/local/etc/php/php.ini
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+# Hardening del pool de FPM (CVE-2026-109618 / CVE-2026-109619):
+# pm.max_requests=1, memory_limit=-1 a nivel de pool y
+# session.upload_progress.enabled=off. Se carga después de www.conf
+# (orden alfabético) así que sus valores ganan.
+COPY docker/php/php-fpm.d/zz-security-hardening.conf /usr/local/etc/php-fpm.d/zz-security-hardening.conf
 
 WORKDIR /var/www/app
 
