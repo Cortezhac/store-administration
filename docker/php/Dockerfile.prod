@@ -91,6 +91,20 @@ RUN mkdir -p storage/framework/sessions \
         bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
+# Descubrimiento de paquetes (Spatie permission, Livewire, Flux, Mary...).
+#
+# El `composer install` de la etapa de vendor corre con --no-scripts porque ahí
+# todavía no existe artisan/, así que el script @php artisan package:discover
+# nunca se ejecuta y NO se genera bootstrap/cache/packages.php.
+#
+# Sin ese manifiesto, los ServiceProvider de los paquetes no se registran:
+# el modelo User usaba HasRoles y el login moría con
+# "Trait Spatie\Permission\Traits\HasRoles not found".
+#
+# Corre acá (y no en el entrypoint) para que el manifiesto quede horneado en
+# la imagen y no dependa de una escritura en runtime.
+RUN php artisan package:discover --ansi
+
 # Entrypoint: valida estructura de storage, sincroniza los assets al volumen
 # compartido con nginx y arranca fpm
 COPY docker/php/docker-entrypoint.prod.sh /usr/local/bin/docker-entrypoint.prod.sh
