@@ -3,6 +3,17 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile.prod
+    # --- Availability boundary para CVE-2026-109618 ------------------------
+    # El pool de FPM fuerza memory_limit=-1 para que una request nunca
+    # aborte por OOM en mitad de una inicialización (la ruta vulnerable).
+    # El límite de memoria real pasa a ser el cgroup: cuando PHP se pasa,
+    # el kernel mata al proceso en vez de corromper el heap.
+    #
+    # memswap_limit == mem_limit desactiva el swap a propósito, así el
+    # OOM killer actúa de forma determinista en vez de tener al worker
+    # swapeando hasta el límite.
+    mem_limit: 1g
+    memswap_limit: 1g
     networks:
       - default # Red del proyecto: comunicación con db y store-nginx por DNS
     volumes:
